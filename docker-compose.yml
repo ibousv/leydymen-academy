@@ -1,0 +1,81 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: leydymen-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: leydymen_db
+      MYSQL_USER: leydymen_user
+      MYSQL_PASSWORD: leydymen_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - leydymen-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: leydymen-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/leydymen_db?useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: leydymen_user
+      SPRING_DATASOURCE_PASSWORD: leydymen_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "false"
+      SPRING_PROFILES_ACTIVE: prod
+      APP_JWT_SECRET: your-secret-key-min-256-chars-long-for-jwt-token-generation-production-change-me-now
+      APP_JWT_EXPIRATION_MS: "86400000"
+      APP_JWT_REFRESH_EXPIRATION_MS: "604800000"
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_COM_LEYDYMEN: DEBUG
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - leydymen-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # phpMyAdmin (optional - for database management)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: leydymen-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: leydymen_user
+      PMA_PASSWORD: leydymen_pass
+      PMA_ROOT_PASSWORD: root_password
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    networks:
+      - leydymen-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  leydymen-network:
+    driver: bridge
