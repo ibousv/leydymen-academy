@@ -5,7 +5,6 @@ import com.leydymen.app.dto.request.ModuleCreateRequest;
 import com.leydymen.app.entity.Formation;
 import com.leydymen.app.entity.Module;
 import com.leydymen.app.entity.Module.ModuleStatus;
-import com.leydymen.app.mapper.ModuleMapper;
 import com.leydymen.app.repository.FormationRepository;
 import com.leydymen.app.repository.ModuleRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +20,10 @@ import java.util.stream.Collectors;
 public class ModuleService {
     private final ModuleRepository moduleRepository;
     private final FormationRepository formationRepository;
-    private final ModuleMapper moduleMapper;
 
     public ModuleDTO getModuleById(Long moduleId) {
         return moduleRepository.findById(moduleId)
-                .map(moduleMapper::toDTO)
+                .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("Module not found with ID: " + moduleId));
     }
 
@@ -33,7 +31,7 @@ public class ModuleService {
         Formation formation = formationRepository.findById(formationId)
                 .orElseThrow(() -> new RuntimeException("Formation not found with ID: " + formationId));
         return moduleRepository.findByFormationOrderByModuleOrderAsc(formation).stream()
-                .map(moduleMapper::toDTO)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -50,7 +48,7 @@ public class ModuleService {
                 .build();
 
         Module savedModule = moduleRepository.save(module);
-        return moduleMapper.toDTO(savedModule);
+        return toDTO(savedModule);
     }
 
     public ModuleDTO updateModule(Long moduleId, ModuleCreateRequest request) {
@@ -62,7 +60,7 @@ public class ModuleService {
         module.setModuleOrder(request.getModuleOrder());
 
         Module updatedModule = moduleRepository.save(module);
-        return moduleMapper.toDTO(updatedModule);
+        return toDTO(updatedModule);
     }
 
     public void deleteModule(Long moduleId) {
@@ -76,12 +74,25 @@ public class ModuleService {
                 .orElseThrow(() -> new RuntimeException("Module not found with ID: " + moduleId));
         module.setStatus(status);
         Module updatedModule = moduleRepository.save(module);
-        return moduleMapper.toDTO(updatedModule);
+        return toDTO(updatedModule);
     }
 
     public long getModuleCountByFormation(Long formationId) {
         Formation formation = formationRepository.findById(formationId)
                 .orElseThrow(() -> new RuntimeException("Formation not found with ID: " + formationId));
         return moduleRepository.countByFormation(formation);
+    }
+
+    private ModuleDTO toDTO(Module module) {
+        return ModuleDTO.builder()
+                .moduleId(module.getModuleId())
+                .title(module.getTitle())
+                .description(module.getDescription())
+                .moduleOrder(module.getModuleOrder())
+                .formationId(module.getFormation() != null ? module.getFormation().getFormationId() : null)
+                .status(module.getStatus())
+                .createdAt(module.getCreatedAt())
+                .updatedAt(module.getUpdatedAt())
+                .build();
     }
 }

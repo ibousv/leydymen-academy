@@ -5,7 +5,6 @@ import com.leydymen.app.dto.response.PaginatedResponse;
 import com.leydymen.app.entity.User;
 import com.leydymen.app.entity.User.UserRole;
 import com.leydymen.app.entity.User.UserStatus;
-import com.leydymen.app.mapper.UserMapper;
 import com.leydymen.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,24 +21,23 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
     public UserDTO getUserById(Long userId) {
         return userRepository.findById(userId)
-                .map(userMapper::toDTO)
+                .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
 
     public UserDTO getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .map(userMapper::toDTO)
+                .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
     }
 
     public UserDTO getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .map(userMapper::toDTO)
+                .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
 
@@ -67,9 +65,13 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        userMapper.updateEntityFromDTO(userDTO, user);
+        if (userDTO.getFirstName() != null) user.setFirstName(userDTO.getFirstName());
+        if (userDTO.getLastName() != null) user.setLastName(userDTO.getLastName());
+        if (userDTO.getPhone() != null) user.setPhone(userDTO.getPhone());
+        if (userDTO.getProfileImage() != null) user.setProfileImage(userDTO.getProfileImage());
+
         User updatedUser = userRepository.save(user);
-        return userMapper.toDTO(updatedUser);
+        return toDTO(updatedUser);
     }
 
     public void deleteUser(Long userId) {
@@ -130,10 +132,27 @@ public class UserService {
         return userRepository.count();
     }
 
+    private UserDTO toDTO(User user) {
+        return UserDTO.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .status(user.getStatus())
+                .profileImage(user.getProfileImage())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .lastLogin(user.getLastLogin())
+                .build();
+    }
+
     private PaginatedResponse<UserDTO> buildPaginatedResponse(Page<User> page, Pageable pageable) {
         return PaginatedResponse.<UserDTO>builder()
                 .content(page.getContent().stream()
-                        .map(userMapper::toDTO)
+                        .map(this::toDTO)
                         .collect(Collectors.toList()))
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())

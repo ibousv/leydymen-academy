@@ -4,7 +4,6 @@ import com.leydymen.app.dto.UserDTO;
 import com.leydymen.app.entity.User;
 import com.leydymen.app.entity.User.UserRole;
 import com.leydymen.app.entity.User.UserStatus;
-import com.leydymen.app.mapper.UserMapper;
 import com.leydymen.app.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,9 +23,6 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private UserMapper userMapper;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -64,7 +60,6 @@ class UserServiceTest {
     @Test
     void testGetUserById_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(userMapper.toDTO(testUser)).thenReturn(testUserDTO);
 
         UserDTO result = userService.getUserById(1L);
 
@@ -85,7 +80,6 @@ class UserServiceTest {
     @Test
     void testGetUserByUsername_Success() {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
-        when(userMapper.toDTO(testUser)).thenReturn(testUserDTO);
 
         UserDTO result = userService.getUserByUsername("testuser");
 

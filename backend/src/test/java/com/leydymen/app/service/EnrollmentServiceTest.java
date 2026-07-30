@@ -7,7 +7,6 @@ import com.leydymen.app.entity.Enrollment.EnrollmentStatus;
 import com.leydymen.app.entity.Formation;
 import com.leydymen.app.entity.User;
 import com.leydymen.app.entity.User.UserRole;
-import com.leydymen.app.mapper.EnrollmentMapper;
 import com.leydymen.app.repository.EnrollmentRepository;
 import com.leydymen.app.repository.FormationRepository;
 import com.leydymen.app.repository.UserRepository;
@@ -35,9 +34,6 @@ class EnrollmentServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private EnrollmentMapper enrollmentMapper;
 
     @InjectMocks
     private EnrollmentService enrollmentService;
@@ -83,7 +79,6 @@ class EnrollmentServiceTest {
     @Test
     void testGetEnrollmentById_Success() {
         when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(testEnrollment));
-        when(enrollmentMapper.toDTO(testEnrollment)).thenReturn(testEnrollmentDTO);
 
         EnrollmentDTO result = enrollmentService.getEnrollmentById(1L);
 
@@ -103,15 +98,14 @@ class EnrollmentServiceTest {
     void testEnrollStudent_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testStudent));
         when(formationRepository.findById(1L)).thenReturn(Optional.of(testFormation));
-        when(enrollmentRepository.existsByStudentAndFormation(testStudent, testFormation))
-                .thenReturn(false);
+        when(enrollmentRepository.findByStudentAndFormation(testStudent, testFormation))
+                .thenReturn(Optional.empty());
         when(enrollmentRepository.save(any(Enrollment.class))).thenReturn(testEnrollment);
-        when(enrollmentMapper.toDTO(testEnrollment)).thenReturn(testEnrollmentDTO);
 
-        EnrollmentDTO result = enrollmentService.enrollStudent(1L, createRequest);
+        EnrollmentDTO result = enrollmentService.enrollStudent(1L, 1L);
 
         assertNotNull(result);
-        assertEquals(EnrollmentStatus.ACTIVE, result.getStatus());
+        assertEquals(EnrollmentStatus.PENDING, result.getStatus());
         verify(enrollmentRepository, times(1)).save(any(Enrollment.class));
     }
 
@@ -119,20 +113,19 @@ class EnrollmentServiceTest {
     void testEnrollStudent_AlreadyEnrolled() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testStudent));
         when(formationRepository.findById(1L)).thenReturn(Optional.of(testFormation));
-        when(enrollmentRepository.existsByStudentAndFormation(testStudent, testFormation))
-                .thenReturn(true);
+        when(enrollmentRepository.findByStudentAndFormation(testStudent, testFormation))
+                .thenReturn(Optional.of(testEnrollment));
 
-        assertThrows(RuntimeException.class, () -> enrollmentService.enrollStudent(1L, createRequest));
+        assertThrows(RuntimeException.class, () -> enrollmentService.enrollStudent(1L, 1L));
         verify(enrollmentRepository, never()).save(any());
     }
 
     @Test
-    void testChangeEnrollmentStatus() {
+    void testUpdateEnrollmentStatus() {
         when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(testEnrollment));
         when(enrollmentRepository.save(any(Enrollment.class))).thenReturn(testEnrollment);
-        when(enrollmentMapper.toDTO(testEnrollment)).thenReturn(testEnrollmentDTO);
 
-        EnrollmentDTO result = enrollmentService.changeEnrollmentStatus(1L, EnrollmentStatus.COMPLETED);
+        EnrollmentDTO result = enrollmentService.updateEnrollmentStatus(1L, EnrollmentStatus.COMPLETED);
 
         assertNotNull(result);
         verify(enrollmentRepository, times(1)).save(any(Enrollment.class));
@@ -141,12 +134,10 @@ class EnrollmentServiceTest {
     @Test
     void testCancelEnrollment_Success() {
         when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(testEnrollment));
-        when(enrollmentRepository.save(any(Enrollment.class))).thenReturn(testEnrollment);
 
         enrollmentService.cancelEnrollment(1L);
 
-        assertEquals(EnrollmentStatus.CANCELLED, testEnrollment.getStatus());
-        verify(enrollmentRepository, times(1)).save(testEnrollment);
+        verify(enrollmentRepository, times(1)).delete(testEnrollment);
     }
 
     @Test

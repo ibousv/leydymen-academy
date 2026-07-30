@@ -5,7 +5,6 @@ import com.leydymen.app.dto.FormationDTO;
 import com.leydymen.app.dto.request.FormationCreateRequest;
 import com.leydymen.app.entity.Formation.FormationLevel;
 import com.leydymen.app.entity.Formation.FormationStatus;
-import com.leydymen.app.mapper.FormationMapper;
 import com.leydymen.app.service.FormationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,9 +35,6 @@ class FormationControllerTest {
 
     @MockBean
     private FormationService formationService;
-
-    @MockBean
-    private FormationMapper formationMapper;
 
     private FormationDTO testFormationDTO;
     private FormationCreateRequest createRequest;

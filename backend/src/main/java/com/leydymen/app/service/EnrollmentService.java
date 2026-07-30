@@ -6,7 +6,6 @@ import com.leydymen.app.entity.Enrollment;
 import com.leydymen.app.entity.Enrollment.EnrollmentStatus;
 import com.leydymen.app.entity.Formation;
 import com.leydymen.app.entity.User;
-import com.leydymen.app.mapper.EnrollmentMapper;
 import com.leydymen.app.repository.EnrollmentRepository;
 import com.leydymen.app.repository.FormationRepository;
 import com.leydymen.app.repository.UserRepository;
@@ -26,11 +25,10 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final FormationRepository formationRepository;
-    private final EnrollmentMapper enrollmentMapper;
 
     public EnrollmentDTO getEnrollmentById(Long enrollmentId) {
         return enrollmentRepository.findById(enrollmentId)
-                .map(enrollmentMapper::toDTO)
+                .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("Enrollment not found with ID: " + enrollmentId));
     }
 
@@ -74,7 +72,7 @@ public class EnrollmentService {
                 .build();
 
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
-        return enrollmentMapper.toDTO(savedEnrollment);
+        return toDTO(savedEnrollment);
     }
 
     public EnrollmentDTO updateEnrollmentStatus(Long enrollmentId, EnrollmentStatus status) {
@@ -82,7 +80,7 @@ public class EnrollmentService {
                 .orElseThrow(() -> new RuntimeException("Enrollment not found with ID: " + enrollmentId));
         enrollment.setStatus(status);
         Enrollment updatedEnrollment = enrollmentRepository.save(enrollment);
-        return enrollmentMapper.toDTO(updatedEnrollment);
+        return toDTO(updatedEnrollment);
     }
 
     public EnrollmentDTO updateEnrollmentProgress(Long enrollmentId, Float completionPercentage) {
@@ -90,7 +88,7 @@ public class EnrollmentService {
                 .orElseThrow(() -> new RuntimeException("Enrollment not found with ID: " + enrollmentId));
         enrollment.setCompletionPercentage(completionPercentage);
         Enrollment updatedEnrollment = enrollmentRepository.save(enrollment);
-        return enrollmentMapper.toDTO(updatedEnrollment);
+        return toDTO(updatedEnrollment);
     }
 
     public void cancelEnrollment(Long enrollmentId) {
@@ -127,10 +125,21 @@ public class EnrollmentService {
         return enrollmentRepository.count();
     }
 
+    private EnrollmentDTO toDTO(Enrollment enrollment) {
+        return EnrollmentDTO.builder()
+                .enrollmentId(enrollment.getEnrollmentId())
+                .studentId(enrollment.getStudent() != null ? enrollment.getStudent().getUserId() : null)
+                .formationId(enrollment.getFormation() != null ? enrollment.getFormation().getFormationId() : null)
+                .enrollmentDate(enrollment.getEnrollmentDate())
+                .status(enrollment.getStatus())
+                .completionPercentage(enrollment.getCompletionPercentage())
+                .build();
+    }
+
     private PaginatedResponse<EnrollmentDTO> buildPaginatedResponse(Page<Enrollment> page, Pageable pageable) {
         return PaginatedResponse.<EnrollmentDTO>builder()
                 .content(page.getContent().stream()
-                        .map(enrollmentMapper::toDTO)
+                        .map(this::toDTO)
                         .collect(Collectors.toList()))
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())

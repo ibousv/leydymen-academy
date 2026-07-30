@@ -7,7 +7,6 @@ import com.leydymen.app.entity.Lesson;
 import com.leydymen.app.entity.StudentProgress;
 import com.leydymen.app.entity.StudentProgress.ProgressStatus;
 import com.leydymen.app.entity.User;
-import com.leydymen.app.mapper.StudentProgressMapper;
 import com.leydymen.app.repository.EnrollmentRepository;
 import com.leydymen.app.repository.LessonRepository;
 import com.leydymen.app.repository.StudentProgressRepository;
@@ -28,11 +27,10 @@ public class StudentProgressService {
     private final UserRepository userRepository;
     private final LessonRepository lessonRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final StudentProgressMapper progressMapper;
 
     public StudentProgressDTO getProgressById(Long progressId) {
         return progressRepository.findById(progressId)
-                .map(progressMapper::toDTO)
+                .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("Progress not found with ID: " + progressId));
     }
 
@@ -58,7 +56,7 @@ public class StudentProgressService {
         }
 
         StudentProgress savedProgress = progressRepository.save(progress);
-        return progressMapper.toDTO(savedProgress);
+        return toDTO(savedProgress);
     }
 
     public StudentProgressDTO trackProgressWithEnrollment(Long studentId, Long enrollmentId, ProgressUpdateRequest request) {
@@ -86,14 +84,14 @@ public class StudentProgressService {
         }
 
         StudentProgress savedProgress = progressRepository.save(progress);
-        return progressMapper.toDTO(savedProgress);
+        return toDTO(savedProgress);
     }
 
     public List<StudentProgressDTO> getStudentProgress(Long studentId) {
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
         return progressRepository.findByStudent(student).stream()
-                .map(progressMapper::toDTO)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -101,7 +99,7 @@ public class StudentProgressService {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new RuntimeException("Enrollment not found with ID: " + enrollmentId));
         return progressRepository.findProgressByEnrollment(enrollment).stream()
-                .map(progressMapper::toDTO)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -109,7 +107,7 @@ public class StudentProgressService {
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
         return progressRepository.findProgressByStudentAndFormation(student, formationId).stream()
-                .map(progressMapper::toDTO)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -129,5 +127,19 @@ public class StudentProgressService {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new RuntimeException("Enrollment not found with ID: " + enrollmentId));
         return progressRepository.getAverageCompletionPercentageByEnrollment(enrollment);
+    }
+
+    private StudentProgressDTO toDTO(StudentProgress progress) {
+        return StudentProgressDTO.builder()
+                .progressId(progress.getProgressId())
+                .studentId(progress.getStudent() != null ? progress.getStudent().getUserId() : null)
+                .lessonId(progress.getLesson() != null ? progress.getLesson().getLessonId() : null)
+                .enrollmentId(progress.getEnrollment() != null ? progress.getEnrollment().getEnrollmentId() : null)
+                .status(progress.getStatus())
+                .percentageWatched(progress.getPercentageWatched())
+                .completedDate(progress.getCompletedDate())
+                .createdAt(progress.getCreatedAt())
+                .updatedAt(progress.getUpdatedAt())
+                .build();
     }
 }

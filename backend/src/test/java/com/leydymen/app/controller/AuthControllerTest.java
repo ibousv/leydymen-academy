@@ -7,7 +7,6 @@ import com.leydymen.app.dto.response.LoginResponse;
 import com.leydymen.app.entity.User;
 import com.leydymen.app.entity.User.UserRole;
 import com.leydymen.app.entity.User.UserStatus;
-import com.leydymen.app.mapper.UserMapper;
 import com.leydymen.app.security.JwtTokenProvider;
 import com.leydymen.app.security.UserPrincipal;
 import com.leydymen.app.service.UserService;
@@ -47,9 +46,6 @@ class AuthControllerTest {
 
     @MockBean
     private JwtTokenProvider jwtTokenProvider;
-
-    @MockBean
-    private UserMapper userMapper;
 
     private RegisterRequest registerRequest;
     private LoginRequest loginRequest;

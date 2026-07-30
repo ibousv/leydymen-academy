@@ -5,7 +5,6 @@ import com.leydymen.app.dto.request.LessonCreateRequest;
 import com.leydymen.app.entity.Lesson;
 import com.leydymen.app.entity.Lesson.LessonStatus;
 import com.leydymen.app.entity.Module;
-import com.leydymen.app.mapper.LessonMapper;
 import com.leydymen.app.repository.LessonRepository;
 import com.leydymen.app.repository.ModuleRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +20,10 @@ import java.util.stream.Collectors;
 public class LessonService {
     private final LessonRepository lessonRepository;
     private final ModuleRepository moduleRepository;
-    private final LessonMapper lessonMapper;
 
     public LessonDTO getLessonById(Long lessonId) {
         return lessonRepository.findById(lessonId)
-                .map(lessonMapper::toDTO)
+                .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("Lesson not found with ID: " + lessonId));
     }
 
@@ -33,7 +31,7 @@ public class LessonService {
         Module module = moduleRepository.findById(moduleId)
                 .orElseThrow(() -> new RuntimeException("Module not found with ID: " + moduleId));
         return lessonRepository.findByModuleOrderByLessonOrderAsc(module).stream()
-                .map(lessonMapper::toDTO)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -52,7 +50,7 @@ public class LessonService {
                 .build();
 
         Lesson savedLesson = lessonRepository.save(lesson);
-        return lessonMapper.toDTO(savedLesson);
+        return toDTO(savedLesson);
     }
 
     public LessonDTO updateLesson(Long lessonId, LessonCreateRequest request) {
@@ -66,7 +64,7 @@ public class LessonService {
         lesson.setLessonOrder(request.getLessonOrder());
 
         Lesson updatedLesson = lessonRepository.save(lesson);
-        return lessonMapper.toDTO(updatedLesson);
+        return toDTO(updatedLesson);
     }
 
     public void deleteLesson(Long lessonId) {
@@ -80,12 +78,27 @@ public class LessonService {
                 .orElseThrow(() -> new RuntimeException("Lesson not found with ID: " + lessonId));
         lesson.setStatus(status);
         Lesson updatedLesson = lessonRepository.save(lesson);
-        return lessonMapper.toDTO(updatedLesson);
+        return toDTO(updatedLesson);
     }
 
     public long getLessonCountByModule(Long moduleId) {
         Module module = moduleRepository.findById(moduleId)
                 .orElseThrow(() -> new RuntimeException("Module not found with ID: " + moduleId));
         return lessonRepository.countByModule(module);
+    }
+
+    private LessonDTO toDTO(Lesson lesson) {
+        return LessonDTO.builder()
+                .lessonId(lesson.getLessonId())
+                .title(lesson.getTitle())
+                .content(lesson.getContent())
+                .videoUrl(lesson.getVideoUrl())
+                .duration(lesson.getDuration())
+                .lessonOrder(lesson.getLessonOrder())
+                .moduleId(lesson.getModule() != null ? lesson.getModule().getModuleId() : null)
+                .status(lesson.getStatus())
+                .createdAt(lesson.getCreatedAt())
+                .updatedAt(lesson.getUpdatedAt())
+                .build();
     }
 }

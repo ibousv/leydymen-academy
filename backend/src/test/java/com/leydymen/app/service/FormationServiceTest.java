@@ -7,7 +7,6 @@ import com.leydymen.app.entity.Formation.FormationLevel;
 import com.leydymen.app.entity.Formation.FormationStatus;
 import com.leydymen.app.entity.User;
 import com.leydymen.app.entity.User.UserRole;
-import com.leydymen.app.mapper.FormationMapper;
 import com.leydymen.app.repository.FormationRepository;
 import com.leydymen.app.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,9 +31,6 @@ class FormationServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private FormationMapper formationMapper;
 
     @InjectMocks
     private FormationService formationService;
@@ -96,7 +92,6 @@ class FormationServiceTest {
     @Test
     void testGetFormationById_Success() {
         when(formationRepository.findById(1L)).thenReturn(Optional.of(testFormation));
-        when(formationMapper.toDTO(testFormation)).thenReturn(testFormationDTO);
 
         FormationDTO result = formationService.getFormationById(1L);
 
@@ -116,7 +111,6 @@ class FormationServiceTest {
     void testCreateFormation_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(instructor));
         when(formationRepository.save(any(Formation.class))).thenReturn(testFormation);
-        when(formationMapper.toDTO(testFormation)).thenReturn(testFormationDTO);
 
         FormationDTO result = formationService.createFormation(1L, createRequest);
 
@@ -137,7 +131,6 @@ class FormationServiceTest {
     void testUpdateFormation_Success() {
         when(formationRepository.findById(1L)).thenReturn(Optional.of(testFormation));
         when(formationRepository.save(any(Formation.class))).thenReturn(testFormation);
-        when(formationMapper.toDTO(testFormation)).thenReturn(testFormationDTO);
 
         FormationDTO result = formationService.updateFormation(1L, createRequest);
 
@@ -150,7 +143,6 @@ class FormationServiceTest {
     void testChangeFormationStatus() {
         when(formationRepository.findById(1L)).thenReturn(Optional.of(testFormation));
         when(formationRepository.save(any(Formation.class))).thenReturn(testFormation);
-        when(formationMapper.toDTO(testFormation)).thenReturn(testFormationDTO);
 
         FormationDTO result = formationService.changeFormationStatus(1L, FormationStatus.PUBLISHED);
 

@@ -7,7 +7,6 @@ import com.leydymen.app.entity.Formation;
 import com.leydymen.app.entity.Formation.FormationLevel;
 import com.leydymen.app.entity.Formation.FormationStatus;
 import com.leydymen.app.entity.User;
-import com.leydymen.app.mapper.FormationMapper;
 import com.leydymen.app.repository.FormationRepository;
 import com.leydymen.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +24,10 @@ import java.util.stream.Collectors;
 public class FormationService {
     private final FormationRepository formationRepository;
     private final UserRepository userRepository;
-    private final FormationMapper formationMapper;
 
     public FormationDTO getFormationById(Long formationId) {
         return formationRepository.findById(formationId)
-                .map(formationMapper::toDTO)
+                .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("Formation not found with ID: " + formationId));
     }
 
@@ -85,7 +83,7 @@ public class FormationService {
                 .build();
 
         Formation savedFormation = formationRepository.save(formation);
-        return formationMapper.toDTO(savedFormation);
+        return toDTO(savedFormation);
     }
 
     public FormationDTO updateFormation(Long formationId, FormationCreateRequest request) {
@@ -104,7 +102,7 @@ public class FormationService {
         formation.setThumbnail(request.getThumbnail());
 
         Formation updatedFormation = formationRepository.save(formation);
-        return formationMapper.toDTO(updatedFormation);
+        return toDTO(updatedFormation);
     }
 
     public void deleteFormation(Long formationId) {
@@ -118,7 +116,7 @@ public class FormationService {
                 .orElseThrow(() -> new RuntimeException("Formation not found with ID: " + formationId));
         formation.setStatus(status);
         Formation updatedFormation = formationRepository.save(formation);
-        return formationMapper.toDTO(updatedFormation);
+        return toDTO(updatedFormation);
     }
 
     public long getTotalFormations() {
@@ -129,10 +127,30 @@ public class FormationService {
         return formationRepository.countByStatus(status);
     }
 
+    private FormationDTO toDTO(Formation formation) {
+        return FormationDTO.builder()
+                .formationId(formation.getFormationId())
+                .title(formation.getTitle())
+                .description(formation.getDescription())
+                .category(formation.getCategory())
+                .level(formation.getLevel())
+                .duration(formation.getDuration())
+                .maxStudents(formation.getMaxStudents())
+                .startDate(formation.getStartDate())
+                .endDate(formation.getEndDate())
+                .price(formation.getPrice())
+                .thumbnail(formation.getThumbnail())
+                .instructorId(formation.getInstructor() != null ? formation.getInstructor().getUserId() : null)
+                .status(formation.getStatus())
+                .createdAt(formation.getCreatedAt())
+                .updatedAt(formation.getUpdatedAt())
+                .build();
+    }
+
     private PaginatedResponse<FormationDTO> buildPaginatedResponse(Page<Formation> page, Pageable pageable) {
         return PaginatedResponse.<FormationDTO>builder()
                 .content(page.getContent().stream()
-                        .map(formationMapper::toDTO)
+                        .map(this::toDTO)
                         .collect(Collectors.toList()))
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())

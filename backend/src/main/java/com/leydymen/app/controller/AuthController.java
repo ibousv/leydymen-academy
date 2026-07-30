@@ -6,7 +6,6 @@ import com.leydymen.app.dto.request.RegisterRequest;
 import com.leydymen.app.dto.response.ApiResponse;
 import com.leydymen.app.dto.response.LoginResponse;
 import com.leydymen.app.entity.User;
-import com.leydymen.app.mapper.UserMapper;
 import com.leydymen.app.security.JwtTokenProvider;
 import com.leydymen.app.security.UserPrincipal;
 import com.leydymen.app.service.UserService;
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authentication", description = "APIs for user authentication and registration")
 public class AuthController {
     private final UserService userService;
-    private final UserMapper userMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
@@ -43,7 +41,7 @@ public class AuthController {
                 request.getRole()
         );
         
-        UserDTO userDTO = userMapper.toDTO(user);
+        UserDTO userDTO = toDTO(user);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.created("User registered successfully", userDTO));
     }
@@ -109,5 +107,22 @@ public class AuthController {
         // Token invalidation is typically handled on the client side by removing the token
         // For stateless JWT, we don't need to do anything on the server
         return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
+    }
+
+    private UserDTO toDTO(User user) {
+        return UserDTO.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .status(user.getStatus())
+                .profileImage(user.getProfileImage())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .lastLogin(user.getLastLogin())
+                .build();
     }
 }
