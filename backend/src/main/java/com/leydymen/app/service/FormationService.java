@@ -1,6 +1,7 @@
 package com.leydymen.app.service;
 
 import com.leydymen.app.dto.FormationDTO;
+import com.leydymen.app.dto.UserDTO;
 import com.leydymen.app.dto.request.FormationCreateRequest;
 import com.leydymen.app.dto.response.PaginatedResponse;
 import com.leydymen.app.entity.Formation;
@@ -140,7 +141,7 @@ public class FormationService {
                 .endDate(formation.getEndDate())
                 .price(formation.getPrice())
                 .thumbnail(formation.getThumbnail())
-                .instructorId(formation.getInstructor() != null ? formation.getInstructor().getUserId() : null)
+                .instructor(formation.getInstructor() != null ? toUserDTO(formation.getInstructor()) : null)
                 .status(formation.getStatus())
                 .createdAt(formation.getCreatedAt())
                 .updatedAt(formation.getUpdatedAt())
@@ -158,6 +159,18 @@ public class FormationService {
                 .pageSize(pageable.getPageSize())
                 .hasNext(page.hasNext())
                 .hasPrevious(page.hasPrevious())
+                .build();
+    }
+
+    private UserDTO toUserDTO(User user) {
+        return UserDTO.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole())
+                .status(user.getStatus())
                 .build();
     }
 }

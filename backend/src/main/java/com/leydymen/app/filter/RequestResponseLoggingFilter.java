@@ -30,7 +30,7 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
         request.setAttribute("requestId", requestId);
         response.setHeader(REQUEST_ID_HEADER, requestId);
 
-        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request);
+        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request, 10000);
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
 
         long startTime = System.currentTimeMillis();
