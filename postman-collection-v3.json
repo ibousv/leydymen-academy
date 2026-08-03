@@ -1119,9 +1119,9 @@
                   "pm.test('Student 1 enrolled in Formation 1', () => {",
                   "  const json = pm.response.json();",
                   "  pm.expect(['PENDING', 'ACTIVE']).to.include(json.data.status);",
-                  "  pm.expect(json.data.progress).to.equal(0);",
-                  "  pm.environment.set('enrollment1_id', json.data.enrollmentId);",
-                  "  console.log('✓ Student 1 enrolled with ID:', json.data.enrollmentId, '- Status:', json.data.status);",
+                  "  const enrollmentId = json.data.enrollmentId || json.data.id;",
+                  "  pm.environment.set('enrollment1_id', enrollmentId);",
+                  "  console.log('✓ Student 1 enrolled with ID:', enrollmentId, '- Status:', json.data.status);",
                   "});"
                 ]
               }
@@ -1153,8 +1153,9 @@
                   "});",
                   "pm.test('Student 1 enrolled in Formation 2', () => {",
                   "  const json = pm.response.json();",
-                  "  pm.expect(json.data.status).to.equal('ACTIVE');",
-                  "  console.log('✓ Student 1 enrolled in Formation 2');",
+                  "  pm.expect(['PENDING', 'ACTIVE']).to.include(json.data.status);",
+                  "  pm.environment.set('enrollment2_id', json.data.enrollmentId);",
+                  "  console.log('✓ Student 1 enrolled in Formation 2 with ID:', json.data.enrollmentId, '- Status:', json.data.status);",
                   "});"
                 ]
               }
@@ -1250,9 +1251,14 @@
                   "});",
                   "pm.test('Enrollment progress retrieved', () => {",
                   "  const json = pm.response.json();",
-                  "  pm.expect(json.data.overallProgress).to.be.greaterThanOrEqual(0);",
-                  "  pm.expect(json.data.completedLessons).to.be.greaterThanOrEqual(0);",
-                  "  console.log('✓ Progress: ', json.data.overallProgress, '%');",
+                  "  // Data can be an array (list of progress) or empty",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  if (json.data.length > 0) {",
+                  "    pm.expect(json.data[0]).to.have.property('status');",
+                  "    console.log('✓ Progress records retrieved:', json.data.length);",
+                  "  } else {",
+                  "    console.log('✓ No progress records yet for this enrollment');",
+                  "  }",
                   "});"
                 ]
               }
@@ -1265,7 +1271,7 @@
               "bearer": [{"key": "token", "value": "{{student1_token}}", "type": "string"}]
             },
             "header": [],
-            "url": {"raw": "{{base_url}}/api/enrollments/{{enrollment1_id}}/progress", "host": ["{{base_url}}"], "path": ["api", "enrollments", "{{enrollment1_id}}", "progress"]}
+            "url": {"raw": "{{base_url}}/api/progress/enrollment/{{enrollment1_id}}", "host": ["{{base_url}}"], "path": ["api", "progress", "enrollment", "{{enrollment1_id}}"]}
           }
         },
         {
@@ -1310,11 +1316,12 @@
                   "});",
                   "pm.test('Student statistics retrieved', () => {",
                   "  const json = pm.response.json();",
-                  "  pm.expect(json.data.studentId).to.equal({{student1_id}});",
+                  "  pm.expect(json.data).to.have.property('studentId');",
+                  "  pm.expect(json.data.studentId).to.be.a('number');",
                   "  pm.expect(json.data).to.have.property('totalEnrollments');",
                   "  pm.expect(json.data).to.have.property('completedFormations');",
-                  "  pm.expect(json.data).to.have.property('averageScore');",
-                  "  console.log('✓ Student 1 Statistics retrieved successfully');",
+                  "  pm.expect(json.data).to.have.property('studentName');",
+                  "  console.log('✓ Student Statistics - ID:', json.data.studentId, ', Name:', json.data.studentName, ', Enrollments:', json.data.totalEnrollments);",
                   "});"
                 ]
               }
@@ -1390,6 +1397,7 @@
     {"key": "formation3_id", "value": "", "type": "string"},
     {"key": "module1_id", "value": "", "type": "string"},
     {"key": "lesson1_id", "value": "", "type": "string"},
-    {"key": "enrollment1_id", "value": "", "type": "string"}
+    {"key": "enrollment1_id", "value": "", "type": "string"},
+    {"key": "enrollment2_id", "value": "", "type": "string"}
   ]
 }

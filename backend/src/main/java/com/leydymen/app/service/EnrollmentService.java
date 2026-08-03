@@ -46,6 +46,13 @@ public class EnrollmentService {
         return buildPaginatedResponse(enrollments, pageable);
     }
 
+    public PaginatedResponse<EnrollmentDTO> getFormationEnrollmentsByStatus(Long formationId, EnrollmentStatus status, Pageable pageable) {
+        Formation formation = formationRepository.findById(formationId)
+                .orElseThrow(() -> new RuntimeException("Formation not found with ID: " + formationId));
+        Page<Enrollment> enrollments = enrollmentRepository.findByFormationAndStatus(formation, status, pageable);
+        return buildPaginatedResponse(enrollments, pageable);
+    }
+
     public PaginatedResponse<EnrollmentDTO> getStudentEnrollmentsByStatus(Long studentId, EnrollmentStatus status, Pageable pageable) {
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
