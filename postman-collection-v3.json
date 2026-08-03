@@ -1269,14 +1269,20 @@
           }
         },
         {
-          "name": "7.6 Get Formation Enrollments (Instructor View) - NOT AVAILABLE",
+          "name": "7.6 Get Formation Enrollments (Instructor View)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Endpoint not yet implemented in backend', () => {",
-                  "  console.log('⚠️  This endpoint will be implemented in next backend update');",
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Formation enrollments retrieved', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.content).to.be.an('array');",
+                  "  pm.expect(json.data).to.have.property('totalElements');",
+                  "  console.log('✓ Formation 1 has', json.data.totalElements, 'enrolled students');",
                   "});"
                 ]
               }
@@ -1289,18 +1295,26 @@
               "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
             },
             "header": [],
-            "url": {"raw": "{{base_url}}/api/enrollments?page=0&size=10", "host": ["{{base_url}}"], "path": ["api", "enrollments"], "query": [{"key": "page", "value": "0"}, {"key": "size", "value": "10"}]}
+            "url": {"raw": "{{base_url}}/api/formations/{{formation1_id}}/enrollments?page=0&size=10", "host": ["{{base_url}}"], "path": ["api", "formations", "{{formation1_id}}", "enrollments"], "query": [{"key": "page", "value": "0"}, {"key": "size", "value": "10"}]}
           }
         },
         {
-          "name": "7.7 Get Student Statistics - NOT AVAILABLE",
+          "name": "7.7 Get Student Statistics",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Endpoint not yet implemented in backend', () => {",
-                  "  console.log('⚠️  StatisticsController will be implemented in next backend update');",
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Student statistics retrieved', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.studentId).to.equal({{student1_id}});",
+                  "  pm.expect(json.data).to.have.property('totalEnrollments');",
+                  "  pm.expect(json.data).to.have.property('completedFormations');",
+                  "  pm.expect(json.data).to.have.property('averageScore');",
+                  "  console.log('✓ Student 1 Statistics retrieved successfully');",
                   "});"
                 ]
               }
@@ -1317,14 +1331,25 @@
           }
         },
         {
-          "name": "7.8 Get Dashboard Statistics - NOT AVAILABLE",
+          "name": "7.8 Get Dashboard Statistics (Admin View)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Endpoint not yet implemented in backend', () => {",
-                  "  console.log('⚠️  StatisticsController will be implemented in next backend update');",
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Dashboard statistics retrieved', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.totalUsers).to.be.greaterThan(0);",
+                  "  pm.expect(json.data.totalFormations).to.be.greaterThan(0);",
+                  "  pm.expect(json.data.totalEnrollments).to.be.greaterThan(0);",
+                  "  console.log('✓ Dashboard Statistics:');",
+                  "  console.log('  - Total Users:', json.data.totalUsers);",
+                  "  console.log('  - Total Formations:', json.data.totalFormations);",
+                  "  console.log('  - Total Enrollments:', json.data.totalEnrollments);",
+                  "  console.log('  - Total Revenue:', json.data.totalRevenue);",
                   "});"
                 ]
               }

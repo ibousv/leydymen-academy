@@ -47,4 +47,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     long countByStudent(User student);
 
     long countByStatus(EnrollmentStatus status);
+
+    @Query("SELECT AVG(e.completionPercentage) FROM Enrollment e")
+    Double getAverageCompletionPercentage();
 }

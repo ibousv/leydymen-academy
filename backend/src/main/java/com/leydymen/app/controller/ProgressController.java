@@ -1,5 +1,6 @@
 package com.leydymen.app.controller;
 
+import com.leydymen.app.config.BeanConfig.SecurityService;
 import com.leydymen.app.dto.StudentProgressDTO;
 import com.leydymen.app.dto.request.ProgressUpdateRequest;
 import com.leydymen.app.dto.response.ApiResponse;
@@ -22,14 +23,18 @@ import java.util.List;
 @Tag(name = "Progress Tracking", description = "APIs for tracking student progress")
 public class ProgressController {
     private final StudentProgressService progressService;
+    private final SecurityService securityService;
 
     @PostMapping
     @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Track lesson progress", description = "Update progress for a lesson")
     public ResponseEntity<ApiResponse<StudentProgressDTO>> trackProgress(
             @Valid @RequestBody ProgressUpdateRequest request) {
-        // TODO: Get current user ID from security context
-        Long studentId = 1L;
+        Long studentId = securityService.getCurrentUserId();
+        if (studentId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error(HttpStatus.UNAUTHORIZED.value(), "User not authenticated"));
+        }
         StudentProgressDTO progress = progressService.trackProgress(studentId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.created("Progress tracked successfully", progress));
@@ -40,8 +45,21 @@ public class ProgressController {
     @Operation(summary = "Get lesson progress", description = "Get student's progress on a specific lesson")
     public ResponseEntity<ApiResponse<StudentProgressDTO>> getLessonProgress(
             @Parameter(description = "Lesson ID") @PathVariable Long lessonId) {
-        // TODO: Get current user ID from security context and retrieve progress
-        return ResponseEntity.ok(ApiResponse.success("Progress retrieved successfully", null));
+        Long studentId = securityService.getCurrentUserId();
+        if (studentId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error(HttpStatus.UNAUTHORIZED.value(), "User not authenticated"));
+        }
+        List<StudentProgressDTO> allProgress = progressService.getStudentProgress(studentId);
+        StudentProgressDTO lessonProgress = allProgress.stream()
+                .filter(p -> p.getLessonId().equals(lessonId))
+                .findFirst()
+                .orElse(null);
+        
+        if (lessonProgress == null) {
+            return ResponseEntity.ok(ApiResponse.success("No progress found for this lesson", null));
+        }
+        return ResponseEntity.ok(ApiResponse.success("Progress retrieved successfully", lessonProgress));
     }
 
     @GetMapping("/formation/{formationId}")
@@ -49,8 +67,11 @@ public class ProgressController {
     @Operation(summary = "Get formation progress", description = "Get student's progress in a formation")
     public ResponseEntity<ApiResponse<List<StudentProgressDTO>>> getFormationProgress(
             @Parameter(description = "Formation ID") @PathVariable Long formationId) {
-        // TODO: Get current user ID from security context
-        Long studentId = 1L;
+        Long studentId = securityService.getCurrentUserId();
+        if (studentId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error(HttpStatus.UNAUTHORIZED.value(), "User not authenticated"));
+        }
         List<StudentProgressDTO> progress = progressService.getFormationProgress(studentId, formationId);
         return ResponseEntity.ok(ApiResponse.success("Progress retrieved successfully", progress));
     }
