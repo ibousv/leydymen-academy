@@ -1,0 +1,1057 @@
+{
+  "info": {
+    "name": "LEYDYMEN Academy API",
+    "description": "Collection complète des APIs du backend Spring Boot pour la plateforme LEYDYMEN Academy",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "description": "Créer un compte utilisateur\n\nMÉTHODE: POST /api/auth/register\nAUTHENTIFICATION: Non requise\n\nREQUEST (Body JSON):\n{\n  \"username\": \"testuser\",              // String - Unique, 3-20 caractères\n  \"email\": \"test@example.com\",         // String - Email valide et unique\n  \"password\": \"TestPass123!\",          // String - Min 8 chars, 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial\n  \"firstName\": \"Test\",                 // String - Prénom\n  \"lastName\": \"User\",                  // String - Nom\n  \"role\": \"STUDENT\"                    // Enum - ADMIN, INSTRUCTOR, ou STUDENT\n}\n\nRÉPONSE (201 Created):\n{\n  \"status\": 201,\n  \"message\": \"User registered successfully\",\n  \"data\": {\n    \"userId\": 1,\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\",\n    \"role\": \"STUDENT\",\n    \"status\": \"ACTIVE\",\n    \"token\": \"eyJhbGciOiJIUzUxMiJ9...\",  // JWT Token à utiliser dans les headers\n    \"createdAt\": \"2026-07-30T10:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Validation failed (email invalid, password weak, etc.)\n- 409: Username ou email déjà utilisé",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"TestPass123!\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "description": "Authentifier un utilisateur et récupérer un JWT token\n\nMÉTHODE: POST /api/auth/login\nAUTHENTIFICATION: Non requise\n\nREQUEST (Body JSON):\n{\n  \"username\": \"testuser\",              // String - Username ou email\n  \"password\": \"TestPass123!\"           // String - Mot de passe\n}\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"userId\": 1,\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\",\n    \"role\": \"STUDENT\",\n    \"token\": \"eyJhbGciOiJIUzUxMiJ9...\",  // JWT Token - Valide 24h\n    \"expiresIn\": 86400\n  }\n}\n\nCODES D'ERREUR:\n- 400: Invalid credentials\n- 401: User not found or password incorrect",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.environment.set(\"jwt_token\", jsonData.data.token);",
+                  "  pm.environment.set(\"userId\", jsonData.data.userId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"TestPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "description": "Déconnecter l'utilisateur actuel\n\nMÉTHODE: POST /api/auth/logout\nAUTHENTIFICATION: Requise (Bearer Token)\n\nREQUEST: Aucun body requis\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Logout successful\",\n  \"data\": null\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized - Token manquant ou invalide\n- 403: Forbidden",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get All Users",
+          "description": "Récupérer la liste paginée de tous les utilisateurs\n\nMÉTHODE: GET /api/users?page=0&size=10\nAUTHENTIFICATION: Requise (Bearer Token) - Admin seulement\n\nQUERY PARAMETERS:\n- page: Integer (default: 0) - Numéro de la page\n- size: Integer (default: 10) - Nombre d'éléments par page\n- role: String (optional) - Filtrer par rôle: ADMIN, INSTRUCTOR, STUDENT\n- status: String (optional) - Filtrer par statut: ACTIVE, INACTIVE, SUSPENDED\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Users retrieved successfully\",\n  \"data\": {\n    \"content\": [\n      {\n        \"userId\": 1,\n        \"username\": \"user1\",\n        \"email\": \"user1@example.com\",\n        \"firstName\": \"John\",\n        \"lastName\": \"Doe\",\n        \"role\": \"STUDENT\",\n        \"status\": \"ACTIVE\",\n        \"createdAt\": \"2026-07-30T10:00:00Z\"\n      }\n    ],\n    \"totalElements\": 15,\n    \"totalPages\": 2,\n    \"currentPage\": 0,\n    \"pageSize\": 10\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden - Accès réservé aux admins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "role",
+                  "value": "STUDENT",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By ID",
+          "description": "Récupérer les détails d'un utilisateur spécifique\n\nMÉTHODE: GET /api/users/{userId}\nAUTHENTIFICATION: Requise (Bearer Token)\n\nPATH PARAMETERS:\n- userId: Integer - ID de l'utilisateur à récupérer\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"User retrieved successfully\",\n  \"data\": {\n    \"userId\": 1,\n    \"username\": \"user1\",\n    \"email\": \"user1@example.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"phone\": \"+33612345678\",\n    \"role\": \"STUDENT\",\n    \"status\": \"ACTIVE\",\n    \"enrollmentCount\": 5,\n    \"completedFormations\": 2,\n    \"createdAt\": \"2026-07-30T10:00:00Z\",\n    \"lastLogin\": \"2026-07-30T09:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 404: User not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "description": "Récupérer le profil complet de l'utilisateur actuel\n\nMÉTHODE: GET /api/users/{userId}/profile\nAUTHENTIFICATION: Requise (Bearer Token)\n\nPATH PARAMETERS:\n- userId: Integer - ID de l'utilisateur\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Profile retrieved successfully\",\n  \"data\": {\n    \"userId\": 1,\n    \"username\": \"user1\",\n    \"email\": \"user1@example.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"phone\": \"+33612345678\",\n    \"bio\": \"Développeur passionné\",\n    \"avatar\": \"https://example.com/avatar.jpg\",\n    \"role\": \"STUDENT\",\n    \"status\": \"ACTIVE\",\n    \"stats\": {\n      \"enrollmentCount\": 5,\n      \"completedFormations\": 2,\n      \"totalLessonsCompleted\": 45,\n      \"averageScore\": 8.5\n    },\n    \"createdAt\": \"2026-07-30T10:00:00Z\",\n    \"lastLogin\": \"2026-07-30T09:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 404: Profile not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/{{userId}}/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "description": "Mettre à jour les informations d'un utilisateur\n\nMÉTHODE: PUT /api/users/{userId}\nAUTHENTIFICATION: Requise (Bearer Token)\n\nPATH PARAMETERS:\n- userId: Integer - ID de l'utilisateur à mettre à jour\n\nREQUEST (Body JSON - tous les champs optionnels):\n{\n  \"firstName\": \"John\",                 // String - Prénom\n  \"lastName\": \"Doe\",                   // String - Nom\n  \"phone\": \"+33612345678\",             // String - Numéro de téléphone\n  \"bio\": \"Développeur passionné\",      // String - Biographie\n  \"avatar\": \"https://example.com/...\" // String - URL de l'avatar\n}\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"User updated successfully\",\n  \"data\": {\n    \"userId\": 1,\n    \"username\": \"user1\",\n    \"email\": \"user1@example.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"phone\": \"+33612345678\",\n    \"bio\": \"Développeur passionné\",\n    \"avatar\": \"https://example.com/avatar.jpg\",\n    \"role\": \"STUDENT\",\n    \"status\": \"ACTIVE\",\n    \"updatedAt\": \"2026-07-30T11:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Validation failed\n- 401: Unauthorized\n- 404: User not found",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\",\n  \"phone\": \"+33612345678\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "description": "Supprimer un utilisateur\n\nMÉTHODE: DELETE /api/users/{userId}\nAUTHENTIFICATION: Requise (Bearer Token) - Admin seulement\n\nPATH PARAMETERS:\n- userId: Integer - ID de l'utilisateur à supprimer\n\nRÉPONSE (204 No Content):\nAucun body retourné\n\nRÉPONSE D'ERREUR (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"User deleted successfully\",\n  \"data\": null\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden - Admin seulement\n- 404: User not found",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Formations",
+      "item": [
+        {
+          "name": "Get All Formations",
+          "description": "Récupérer la liste paginée de toutes les formations\n\nMÉTHODE: GET /api/formations?page=0&size=10\nAUTHENTIFICATION: Non requise (Public)\n\nQUERY PARAMETERS:\n- page: Integer (default: 0) - Numéro de la page\n- size: Integer (default: 10) - Nombre d'éléments par page\n- status: String (optional) - Filtrer: DRAFT, PUBLISHED, ARCHIVED\n- category: String (optional) - Filtrer par catégorie: Java, Python, Web, etc.\n- level: String (optional) - Filtrer: BEGINNER, INTERMEDIATE, ADVANCED, EXPERT\n- sortBy: String (optional) - Trier par: title, createdAt, enrollmentCount\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Formations retrieved successfully\",\n  \"data\": {\n    \"content\": [\n      {\n        \"formationId\": 1,\n        \"title\": \"Spring Boot Bootcamp\",\n        \"description\": \"Apprenez Spring Boot de zéro\",\n        \"category\": \"Java\",\n        \"level\": \"INTERMEDIATE\",\n        \"duration\": 80,\n        \"maxStudents\": 50,\n        \"enrolledStudents\": 25,\n        \"instructorId\": 2,\n        \"instructorName\": \"John Instructor\",\n        \"startDate\": \"2026-08-15\",\n        \"endDate\": \"2026-10-15\",\n        \"price\": 999.99,\n        \"status\": \"PUBLISHED\",\n        \"createdAt\": \"2026-07-30T10:00:00Z\"\n      }\n    ],\n    \"totalElements\": 25,\n    \"totalPages\": 3,\n    \"currentPage\": 0,\n    \"pageSize\": 10\n  }\n}\n\nCODES D'ERREUR:\n- 400: Invalid parameters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/formations?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "formations"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "PUBLISHED",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "Java",
+                  "disabled": true
+                },
+                {
+                  "key": "level",
+                  "value": "BEGINNER",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Formation By ID",
+          "description": "Récupérer les détails complets d'une formation\n\nMÉTHODE: GET /api/formations/{formationId}\nAUTHENTIFICATION: Non requise (Public)\n\nPATH PARAMETERS:\n- formationId: Integer - ID de la formation\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Formation retrieved successfully\",\n  \"data\": {\n    \"formationId\": 1,\n    \"title\": \"Spring Boot Bootcamp\",\n    \"description\": \"Apprenez Spring Boot de zéro\",\n    \"fullDescription\": \"Un cours complet sur...\",\n    \"category\": \"Java\",\n    \"level\": \"INTERMEDIATE\",\n    \"duration\": 80,\n    \"maxStudents\": 50,\n    \"enrolledStudents\": 25,\n    \"instructorId\": 2,\n    \"instructorName\": \"John Instructor\",\n    \"startDate\": \"2026-08-15\",\n    \"endDate\": \"2026-10-15\",\n    \"price\": 999.99,\n    \"status\": \"PUBLISHED\",\n    \"imageUrl\": \"https://example.com/image.jpg\",\n    \"modules\": [\n      {\n        \"moduleId\": 1,\n        \"title\": \"Fondamentaux\",\n        \"order\": 1\n      }\n    ],\n    \"createdAt\": \"2026-07-30T10:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 404: Formation not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/formations/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "formations",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Formation",
+          "description": "Créer une nouvelle formation\n\nMÉTHODE: POST /api/formations\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nREQUEST (Body JSON):\n{\n  \"title\": \"Spring Boot Bootcamp\",        // String - Titre (3-200 chars)\n  \"description\": \"Apprenez Spring Boot\",  // String - Description courte\n  \"fullDescription\": \"Un cours complet...\", // String - Description longue\n  \"category\": \"Java\",                    // String - Catégorie\n  \"level\": \"INTERMEDIATE\",               // Enum - BEGINNER, INTERMEDIATE, ADVANCED, EXPERT\n  \"duration\": 80,                        // Integer - Durée en heures\n  \"maxStudents\": 50,                     // Integer - Max d'étudiants\n  \"startDate\": \"2026-08-15\",             // String - Format: YYYY-MM-DD\n  \"endDate\": \"2026-10-15\",               // String - Format: YYYY-MM-DD\n  \"price\": 999.99,                       // Decimal - Prix de la formation\n  \"imageUrl\": \"https://example.com/...\" // String (optional) - URL de l'image\n}\n\nRÉPONSE (201 Created):\n{\n  \"status\": 201,\n  \"message\": \"Formation created successfully\",\n  \"data\": {\n    \"formationId\": 1,\n    \"title\": \"Spring Boot Bootcamp\",\n    \"status\": \"DRAFT\",\n    \"createdAt\": \"2026-07-30T10:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Validation failed\n- 401: Unauthorized\n- 403: Forbidden - Instructor/Admin seulement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Spring Boot Bootcamp\",\n  \"description\": \"Apprenez Spring Boot de zéro\",\n  \"category\": \"Java\",\n  \"level\": \"INTERMEDIATE\",\n  \"duration\": 80,\n  \"maxStudents\": 50,\n  \"startDate\": \"2026-08-15\",\n  \"endDate\": \"2026-10-15\",\n  \"price\": 999.99\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/formations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "formations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Formation",
+          "description": "Mettre à jour une formation existante\n\nMÉTHODE: PUT /api/formations/{formationId}\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nPATH PARAMETERS:\n- formationId: Integer - ID de la formation\n\nREQUEST (Body JSON - tous les champs optionnels):\n{\n  \"title\": \"Spring Boot Bootcamp Updated\",\n  \"description\": \"Apprenez Spring Boot de zéro - Édition 2026\",\n  \"category\": \"Java\",\n  \"level\": \"INTERMEDIATE\",\n  \"duration\": 100,\n  \"maxStudents\": 60,\n  \"startDate\": \"2026-08-15\",\n  \"endDate\": \"2026-10-15\",\n  \"price\": 1299.99\n}\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Formation updated successfully\",\n  \"data\": {\n    \"formationId\": 1,\n    \"title\": \"Spring Boot Bootcamp Updated\",\n    \"updatedAt\": \"2026-07-30T11:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Validation failed\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Formation not found",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Spring Boot Bootcamp Updated\",\n  \"description\": \"Apprenez Spring Boot de zéro - Édition 2026\",\n  \"category\": \"Java\",\n  \"level\": \"INTERMEDIATE\",\n  \"duration\": 100,\n  \"maxStudents\": 60,\n  \"startDate\": \"2026-08-15\",\n  \"endDate\": \"2026-10-15\",\n  \"price\": 1299.99\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/formations/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "formations",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Formation",
+          "description": "Supprimer une formation\n\nMÉTHODE: DELETE /api/formations/{formationId}\nAUTHENTIFICATION: Requise (Bearer Token) - Admin seulement\n\nPATH PARAMETERS:\n- formationId: Integer - ID de la formation à supprimer\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Formation deleted successfully\",\n  \"data\": null\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden - Admin seulement\n- 404: Formation not found",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/formations/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "formations",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Formation Status",
+          "description": "Changer le statut d'une formation (DRAFT -> PUBLISHED -> ARCHIVED)\n\nMÉTHODE: PATCH /api/formations/{formationId}/status\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nPATH PARAMETERS:\n- formationId: Integer - ID de la formation\n\nREQUEST (Body JSON):\n{\n  \"status\": \"PUBLISHED\"  // Enum - DRAFT, PUBLISHED, ARCHIVED\n}\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Formation status updated successfully\",\n  \"data\": {\n    \"formationId\": 1,\n    \"status\": \"PUBLISHED\",\n    \"updatedAt\": \"2026-07-30T11:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Invalid status\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Formation not found",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PUBLISHED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/formations/1/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "formations",
+                "1",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Formation Modules",
+          "description": "Récupérer tous les modules d'une formation\n\nMÉTHODE: GET /api/formations/{formationId}/modules\nAUTHENTIFICATION: Non requise (Public)\n\nPATH PARAMETERS:\n- formationId: Integer - ID de la formation\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Modules retrieved successfully\",\n  \"data\": [\n    {\n      \"moduleId\": 1,\n      \"formationId\": 1,\n      \"title\": \"Fondamentaux de Spring Boot\",\n      \"description\": \"Apprenez les bases\",\n      \"order\": 1,\n      \"lessonCount\": 5,\n      \"createdAt\": \"2026-07-30T10:00:00Z\"\n    },\n    {\n      \"moduleId\": 2,\n      \"formationId\": 1,\n      \"title\": \"Configuration avancée\",\n      \"description\": \"Configurations avancées\",\n      \"order\": 2,\n      \"lessonCount\": 4,\n      \"createdAt\": \"2026-07-30T10:00:00Z\"\n    }\n  ]\n}\n\nCODES D'ERREUR:\n- 404: Formation not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/formations/1/modules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "formations",
+                "1",
+                "modules"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Formations",
+          "description": "Rechercher des formations par mot-clé\n\nMÉTHODE: GET /api/formations/search?keyword=java&page=0&size=10\nAUTHENTIFICATION: Non requise (Public)\n\nQUERY PARAMETERS:\n- keyword: String (required) - Mot-clé de recherche\n- page: Integer (default: 0) - Numéro de la page\n- size: Integer (default: 10) - Nombre d'éléments par page\n- category: String (optional) - Filtrer par catégorie\n- level: String (optional) - Filtrer par niveau\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Search results\",\n  \"data\": {\n    \"content\": [\n      {\n        \"formationId\": 1,\n        \"title\": \"Spring Boot Bootcamp\",\n        \"description\": \"Apprenez Spring Boot de zéro\",\n        \"category\": \"Java\",\n        \"level\": \"INTERMEDIATE\",\n        \"enrolledStudents\": 25,\n        \"price\": 999.99,\n        \"status\": \"PUBLISHED\"\n      }\n    ],\n    \"totalElements\": 5,\n    \"totalPages\": 1,\n    \"currentPage\": 0\n  }\n}\n\nCODES D'ERREUR:\n- 400: Invalid parameters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/formations/search?keyword=java&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "formations",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "java"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Modules",
+      "item": [
+        {
+          "name": "Create Module",
+          "description": "Créer un nouveau module dans une formation\n\nMÉTHODE: POST /api/modules\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nREQUEST (Body JSON):\n{\n  \"formationId\": 1,                       // Integer - ID de la formation\n  \"title\": \"Fondamentaux de Spring Boot\", // String - Titre du module\n  \"description\": \"Apprenez les bases\",    // String - Description\n  \"order\": 1                              // Integer - Ordre d'affichage\n}\n\nRÉPONSE (201 Created):\n{\n  \"status\": 201,\n  \"message\": \"Module created successfully\",\n  \"data\": {\n    \"moduleId\": 1,\n    \"formationId\": 1,\n    \"title\": \"Fondamentaux de Spring Boot\",\n    \"order\": 1,\n    \"createdAt\": \"2026-07-30T10:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Validation failed\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Formation not found",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formationId\": 1,\n  \"title\": \"Fondamentaux de Spring Boot\",\n  \"description\": \"Apprenez les bases de Spring Boot\",\n  \"order\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/modules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "modules"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Module",
+          "description": "Mettre à jour un module existant\n\nMÉTHODE: PUT /api/modules/{moduleId}\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nPATH PARAMETERS:\n- moduleId: Integer - ID du module\n\nREQUEST (Body JSON - tous les champs optionnels):\n{\n  \"title\": \"Fondamentaux de Spring Boot - Mis à jour\",\n  \"description\": \"Apprenez les bases avec des exemples\",\n  \"order\": 1\n}\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Module updated successfully\",\n  \"data\": {\n    \"moduleId\": 1,\n    \"title\": \"Fondamentaux de Spring Boot - Mis à jour\",\n    \"updatedAt\": \"2026-07-30T11:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Validation failed\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Module not found",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Fondamentaux de Spring Boot - Mis à jour\",\n  \"description\": \"Apprenez les bases de Spring Boot avec des exemples\",\n  \"order\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/modules/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "modules",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Module",
+          "description": "Supprimer un module\n\nMÉTHODE: DELETE /api/modules/{moduleId}\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nPATH PARAMETERS:\n- moduleId: Integer - ID du module à supprimer\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Module deleted successfully\",\n  \"data\": null\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Module not found",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/modules/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "modules",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Module Lessons",
+          "description": "Récupérer toutes les leçons d'un module\n\nMÉTHODE: GET /api/modules/{moduleId}/lessons\nAUTHENTIFICATION: Non requise (Public)\n\nPATH PARAMETERS:\n- moduleId: Integer - ID du module\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Lessons retrieved successfully\",\n  \"data\": [\n    {\n      \"lessonId\": 1,\n      \"moduleId\": 1,\n      \"title\": \"Introduction à Spring Boot\",\n      \"description\": \"Les bases de Spring Boot\",\n      \"duration\": 30,\n      \"videoUrl\": \"https://example.com/video1.mp4\",\n      \"order\": 1,\n      \"createdAt\": \"2026-07-30T10:00:00Z\"\n    },\n    {\n      \"lessonId\": 2,\n      \"moduleId\": 1,\n      \"title\": \"Configuration Spring Boot\",\n      \"description\": \"Configurer votre première app\",\n      \"duration\": 45,\n      \"videoUrl\": \"https://example.com/video2.mp4\",\n      \"order\": 2,\n      \"createdAt\": \"2026-07-30T10:00:00Z\"\n    }\n  ]\n}\n\nCODES D'ERREUR:\n- 404: Module not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/modules/1/lessons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "modules",
+                "1",
+                "lessons"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Lessons",
+      "item": [
+        {
+          "name": "Create Lesson",
+          "description": "Créer une nouvelle leçon dans un module\n\nMÉTHODE: POST /api/lessons\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nREQUEST (Body JSON):\n{\n  \"moduleId\": 1,                          // Integer - ID du module\n  \"title\": \"Introduction à Spring Boot\",  // String - Titre de la leçon\n  \"content\": \"Découvrez les bases...\",    // String - Contenu de la leçon\n  \"videoUrl\": \"https://example.com/v.mp4\", // String - URL de la vidéo\n  \"duration\": 30,                         // Integer - Durée en minutes\n  \"order\": 1                              // Integer - Ordre d'affichage\n}\n\nRÉPONSE (201 Created):\n{\n  \"status\": 201,\n  \"message\": \"Lesson created successfully\",\n  \"data\": {\n    \"lessonId\": 1,\n    \"moduleId\": 1,\n    \"title\": \"Introduction à Spring Boot\",\n    \"order\": 1,\n    \"duration\": 30,\n    \"createdAt\": \"2026-07-30T10:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Validation failed\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Module not found",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"moduleId\": 1,\n  \"title\": \"Introduction à Spring Boot\",\n  \"content\": \"Découvrez les bases de Spring Boot...\",\n  \"videoUrl\": \"https://example.com/video1.mp4\",\n  \"duration\": 30,\n  \"order\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/lessons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "lessons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Lesson",
+          "description": "Mettre à jour une leçon existante\n\nMÉTHODE: PUT /api/lessons/{lessonId}\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nPATH PARAMETERS:\n- lessonId: Integer - ID de la leçon\n\nREQUEST (Body JSON - tous les champs optionnels):\n{\n  \"title\": \"Introduction à Spring Boot - Updated\",\n  \"content\": \"Découvrez les bases avec des exemples pratiques...\",\n  \"videoUrl\": \"https://example.com/video1-updated.mp4\",\n  \"duration\": 45,\n  \"order\": 1\n}\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Lesson updated successfully\",\n  \"data\": {\n    \"lessonId\": 1,\n    \"title\": \"Introduction à Spring Boot - Updated\",\n    \"duration\": 45,\n    \"updatedAt\": \"2026-07-30T11:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Validation failed\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Lesson not found",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Introduction à Spring Boot - Updated\",\n  \"content\": \"Découvrez les bases de Spring Boot avec des exemples pratiques...\",\n  \"videoUrl\": \"https://example.com/video1-updated.mp4\",\n  \"duration\": 45,\n  \"order\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/lessons/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "lessons",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Lesson",
+          "description": "Supprimer une leçon\n\nMÉTHODE: DELETE /api/lessons/{lessonId}\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nPATH PARAMETERS:\n- lessonId: Integer - ID de la leçon à supprimer\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Lesson deleted successfully\",\n  \"data\": null\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Lesson not found",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/lessons/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "lessons",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Enrollments",
+      "item": [
+        {
+          "name": "Enroll Student",
+          "description": "Inscrire l'utilisateur actuel à une formation\n\nMÉTHODE: POST /api/enrollments\nAUTHENTIFICATION: Requise (Bearer Token) - Student seulement\n\nREQUEST (Body JSON):\n{\n  \"formationId\": 1  // Integer - ID de la formation\n}\n\nRÉPONSE (201 Created):\n{\n  \"status\": 201,\n  \"message\": \"Student enrolled successfully\",\n  \"data\": {\n    \"enrollmentId\": 1,\n    \"userId\": 1,\n    \"formationId\": 1,\n    \"formationTitle\": \"Spring Boot Bootcamp\",\n    \"enrollmentDate\": \"2026-07-30T10:00:00Z\",\n    \"status\": \"ACTIVE\",\n    \"progress\": 0\n  }\n}\n\nCODES D'ERREUR:\n- 400: Already enrolled in this formation\n- 401: Unauthorized\n- 403: Formation not available or max students reached\n- 404: Formation not found",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formationId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/enrollments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "enrollments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Enrollments",
+          "description": "Récupérer les inscriptions de l'utilisateur actuel\n\nMÉTHODE: GET /api/enrollments?page=0&size=10&status=ACTIVE\nAUTHENTIFICATION: Requise (Bearer Token)\n\nQUERY PARAMETERS:\n- page: Integer (default: 0) - Numéro de la page\n- size: Integer (default: 10) - Nombre d'éléments par page\n- status: String (optional) - Filtrer: ACTIVE, COMPLETED, CANCELLED\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Enrollments retrieved successfully\",\n  \"data\": {\n    \"content\": [\n      {\n        \"enrollmentId\": 1,\n        \"formationId\": 1,\n        \"formationTitle\": \"Spring Boot Bootcamp\",\n        \"instructorName\": \"John Instructor\",\n        \"enrollmentDate\": \"2026-07-30T10:00:00Z\",\n        \"status\": \"ACTIVE\",\n        \"progress\": 25,\n        \"completedLessons\": 5,\n        \"totalLessons\": 20\n      }\n    ],\n    \"totalElements\": 3,\n    \"totalPages\": 1,\n    \"currentPage\": 0\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/enrollments?page=0&size=10&status=ACTIVE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "enrollments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Enrollment By ID",
+          "description": "Récupérer les détails d'une inscription spécifique\n\nMÉTHODE: GET /api/enrollments/{enrollmentId}\nAUTHENTIFICATION: Requise (Bearer Token)\n\nPATH PARAMETERS:\n- enrollmentId: Integer - ID de l'inscription\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Enrollment retrieved successfully\",\n  \"data\": {\n    \"enrollmentId\": 1,\n    \"userId\": 1,\n    \"userName\": \"student1\",\n    \"formationId\": 1,\n    \"formationTitle\": \"Spring Boot Bootcamp\",\n    \"instructorName\": \"John Instructor\",\n    \"enrollmentDate\": \"2026-07-30T10:00:00Z\",\n    \"startDate\": \"2026-08-15T00:00:00Z\",\n    \"endDate\": \"2026-10-15T00:00:00Z\",\n    \"status\": \"ACTIVE\",\n    \"progress\": 25,\n    \"completedLessons\": 5,\n    \"totalLessons\": 20,\n    \"lastAccessDate\": \"2026-07-30T09:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden - Cannot access other's enrollment\n- 404: Enrollment not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/enrollments/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "enrollments",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Enrollment",
+          "description": "Annuler l'inscription à une formation\n\nMÉTHODE: DELETE /api/enrollments/{enrollmentId}\nAUTHENTIFICATION: Requise (Bearer Token) - Student/Admin seulement\n\nPATH PARAMETERS:\n- enrollmentId: Integer - ID de l'inscription à annuler\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Enrollment cancelled successfully\",\n  \"data\": {\n    \"enrollmentId\": 1,\n    \"status\": \"CANCELLED\",\n    \"cancelledDate\": \"2026-07-30T11:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden - Can only cancel own enrollment\n- 404: Enrollment not found",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/enrollments/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "enrollments",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Enrollment Status",
+          "description": "Changer le statut d'une inscription (Admin/Instructor seulement)\n\nMÉTHODE: PATCH /api/enrollments/{enrollmentId}/status\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nPATH PARAMETERS:\n- enrollmentId: Integer - ID de l'inscription\n\nREQUEST (Body JSON):\n{\n  \"status\": \"COMPLETED\"  // Enum - ACTIVE, COMPLETED, SUSPENDED, CANCELLED\n}\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Enrollment status updated successfully\",\n  \"data\": {\n    \"enrollmentId\": 1,\n    \"status\": \"COMPLETED\",\n    \"completedDate\": \"2026-07-30T11:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 400: Invalid status\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Enrollment not found",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"COMPLETED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/enrollments/1/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "enrollments",
+                "1",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Enrollment Progress",
+          "description": "Récupérer la progression détaillée d'une inscription\n\nMÉTHODE: GET /api/enrollments/{enrollmentId}/progress\nAUTHENTIFICATION: Requise (Bearer Token)\n\nPATH PARAMETERS:\n- enrollmentId: Integer - ID de l'inscription\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Progress retrieved successfully\",\n  \"data\": {\n    \"enrollmentId\": 1,\n    \"formationTitle\": \"Spring Boot Bootcamp\",\n    \"overallProgress\": 45,\n    \"totalModules\": 5,\n    \"completedModules\": 2,\n    \"totalLessons\": 20,\n    \"completedLessons\": 9,\n    \"modules\": [\n      {\n        \"moduleId\": 1,\n        \"title\": \"Fondamentaux\",\n        \"progress\": 100,\n        \"completedLessons\": 5,\n        \"totalLessons\": 5\n      },\n      {\n        \"moduleId\": 2,\n        \"title\": \"Configuration\",\n        \"progress\": 50,\n        \"completedLessons\": 2,\n        \"totalLessons\": 4\n      }\n    ]\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Enrollment not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/enrollments/1/progress",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "enrollments",
+                "1",
+                "progress"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Formation Enrollments",
+          "description": "Récupérer toutes les inscriptions d'une formation (Instructor/Admin seulement)\n\nMÉTHODE: GET /api/formations/{formationId}/enrollments?page=0&size=10&status=ACTIVE\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nPATH PARAMETERS:\n- formationId: Integer - ID de la formation\n\nQUERY PARAMETERS:\n- page: Integer (default: 0) - Numéro de la page\n- size: Integer (default: 10) - Nombre d'éléments par page\n- status: String (optional) - Filtrer: ACTIVE, COMPLETED, SUSPENDED\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Formation enrollments retrieved successfully\",\n  \"data\": {\n    \"content\": [\n      {\n        \"enrollmentId\": 1,\n        \"userId\": 1,\n        \"userName\": \"student1\",\n        \"email\": \"student1@example.com\",\n        \"enrollmentDate\": \"2026-07-30T10:00:00Z\",\n        \"status\": \"ACTIVE\",\n        \"progress\": 45,\n        \"completedLessons\": 9,\n        \"totalLessons\": 20\n      }\n    ],\n    \"totalElements\": 25,\n    \"totalPages\": 3,\n    \"currentPage\": 0\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Formation not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/formations/1/enrollments?page=0&size=10&status=ACTIVE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "formations",
+                "1",
+                "enrollments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Progress Tracking",
+      "item": [
+        {
+          "name": "Update Lesson Progress",
+          "description": "Mettre à jour la progression d'une leçon\n\nMÉTHODE: POST /api/progress\nAUTHENTIFICATION: Requise (Bearer Token) - Student seulement\n\nREQUEST (Body JSON):\n{\n  \"lessonId\": 1,              // Integer - ID de la leçon\n  \"status\": \"COMPLETED\",      // Enum - IN_PROGRESS, COMPLETED\n  \"percentageWatched\": 100    // Integer - Pourcentage de vidéo regardée (0-100)\n}\n\nRÉPONSE (201 Created ou 200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Progress updated successfully\",\n  \"data\": {\n    \"progressId\": 1,\n    \"lessonId\": 1,\n    \"lessonTitle\": \"Introduction à Spring Boot\",\n    \"status\": \"COMPLETED\",\n    \"percentageWatched\": 100,\n    \"completedDate\": \"2026-07-30T11:00:00Z\",\n    \"enrollmentProgress\": 50\n  }\n}\n\nCODES D'ERREUR:\n- 400: Invalid data\n- 401: Unauthorized\n- 403: Not enrolled in this formation\n- 404: Lesson not found",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lessonId\": 1,\n  \"status\": \"COMPLETED\",\n  \"percentageWatched\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/progress",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "progress"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lesson Progress",
+          "description": "Récupérer la progression d'une leçon spécifique\n\nMÉTHODE: GET /api/progress/lesson/{lessonId}\nAUTHENTIFICATION: Requise (Bearer Token)\n\nPATH PARAMETERS:\n- lessonId: Integer - ID de la leçon\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Lesson progress retrieved successfully\",\n  \"data\": {\n    \"progressId\": 1,\n    \"lessonId\": 1,\n    \"lessonTitle\": \"Introduction à Spring Boot\",\n    \"moduleId\": 1,\n    \"moduleTitle\": \"Fondamentaux\",\n    \"status\": \"COMPLETED\",\n    \"percentageWatched\": 100,\n    \"startedDate\": \"2026-07-30T08:00:00Z\",\n    \"completedDate\": \"2026-07-30T09:00:00Z\",\n    \"timeSpent\": 30\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 404: Lesson or progress not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/progress/lesson/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "progress",
+                "lesson",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Formation Progress",
+          "description": "Récupérer la progression d'une formation complète\n\nMÉTHODE: GET /api/progress/formation/{formationId}\nAUTHENTIFICATION: Requise (Bearer Token)\n\nPATH PARAMETERS:\n- formationId: Integer - ID de la formation\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Formation progress retrieved successfully\",\n  \"data\": {\n    \"formationId\": 1,\n    \"formationTitle\": \"Spring Boot Bootcamp\",\n    \"enrollmentId\": 1,\n    \"overallProgress\": 55,\n    \"status\": \"IN_PROGRESS\",\n    \"enrollmentDate\": \"2026-07-30T10:00:00Z\",\n    \"expectedCompletionDate\": \"2026-10-15T00:00:00Z\",\n    \"modules\": [\n      {\n        \"moduleId\": 1,\n        \"title\": \"Fondamentaux\",\n        \"progress\": 100,\n        \"lessons\": [\n          {\n            \"lessonId\": 1,\n            \"title\": \"Introduction\",\n            \"status\": \"COMPLETED\",\n            \"percentageWatched\": 100\n          }\n        ]\n      }\n    ],\n    \"totalLessons\": 20,\n    \"completedLessons\": 11,\n    \"averageScore\": 8.5\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Not enrolled\n- 404: Formation or progress not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/progress/formation/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "progress",
+                "formation",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "item": [
+        {
+          "name": "Get Dashboard Statistics",
+          "description": "Récupérer les statistiques du tableau de bord (Admin seulement)\n\nMÉTHODE: GET /api/statistics/dashboard\nAUTHENTIFICATION: Requise (Bearer Token) - Admin seulement\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Dashboard statistics retrieved successfully\",\n  \"data\": {\n    \"totalUsers\": 145,\n    \"totalStudents\": 120,\n    \"totalInstructors\": 20,\n    \"totalAdmins\": 5,\n    \"totalFormations\": 25,\n    \"publishedFormations\": 18,\n    \"draftFormations\": 7,\n    \"totalEnrollments\": 340,\n    \"activeEnrollments\": 280,\n    \"completedEnrollments\": 60,\n    \"totalRevenue\": 45000.50,\n    \"averageEnrollmentPerFormation\": 13.6,\n    \"averageStudentsPerFormation\": 12.5,\n    \"lastUpdate\": \"2026-07-30T10:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden - Admin only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/statistics/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "statistics",
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Formation Statistics",
+          "description": "Récupérer les statistiques d'une formation (Instructor/Admin seulement)\n\nMÉTHODE: GET /api/statistics/formations/{formationId}\nAUTHENTIFICATION: Requise (Bearer Token) - Instructor/Admin seulement\n\nPATH PARAMETERS:\n- formationId: Integer - ID de la formation\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Formation statistics retrieved successfully\",\n  \"data\": {\n    \"formationId\": 1,\n    \"formationTitle\": \"Spring Boot Bootcamp\",\n    \"totalEnrollments\": 45,\n    \"activeEnrollments\": 35,\n    \"completedEnrollments\": 10,\n    \"averageProgress\": 62,\n    \"averageScore\": 8.2,\n    \"totalRevenue\": 44995.55,\n    \"instructorName\": \"John Instructor\",\n    \"completionRate\": 22.2,\n    \"averageTimePerLesson\": 40,\n    \"lessonsCount\": 20,\n    \"modulesCount\": 5,\n    \"createdDate\": \"2026-07-01T10:00:00Z\",\n    \"startDate\": \"2026-08-15T00:00:00Z\",\n    \"endDate\": \"2026-10-15T00:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden\n- 404: Formation not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/statistics/formations/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "statistics",
+                "formations",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Statistics",
+          "description": "Récupérer les statistiques d'un étudiant (Student voir sa stats, Admin voir toutes)\n\nMÉTHODE: GET /api/statistics/students/{userId}\nAUTHENTIFICATION: Requise (Bearer Token)\n\nPATH PARAMETERS:\n- userId: Integer - ID de l'étudiant\n\nRÉPONSE (200 OK):\n{\n  \"status\": 200,\n  \"message\": \"Student statistics retrieved successfully\",\n  \"data\": {\n    \"userId\": 1,\n    \"userName\": \"student1\",\n    \"email\": \"student1@example.com\",\n    \"totalEnrollments\": 5,\n    \"completedFormations\": 2,\n    \"activeEnrollments\": 3,\n    \"totalLessonsCompleted\": 45,\n    \"totalTimeSpent\": 450,\n    \"averageScore\": 8.5,\n    \"enrollments\": [\n      {\n        \"formationId\": 1,\n        \"formationTitle\": \"Spring Boot Bootcamp\",\n        \"progress\": 65,\n        \"status\": \"IN_PROGRESS\",\n        \"enrollmentDate\": \"2026-07-30T10:00:00Z\"\n      }\n    ],\n    \"lastActivityDate\": \"2026-07-30T09:00:00Z\",\n    \"joinDate\": \"2026-06-01T00:00:00Z\"\n  }\n}\n\nCODES D'ERREUR:\n- 401: Unauthorized\n- 403: Forbidden - Can only view own stats\n- 404: Student not found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/statistics/students/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "statistics",
+                "students",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health",
+          "description": "Vérifier l'état de santé du serveur backend\n\nMÉTHODE: GET /actuator/health\nAUTHENTIFICATION: Non requise (Public)\n\nRÉPONSE (200 OK):\n{\n  \"status\": \"UP\",\n  \"components\": {\n    \"db\": {\n      \"status\": \"UP\",\n      \"details\": {\n        \"database\": \"MySQL\",\n        \"hello\": 1\n      }\n    },\n    \"diskSpace\": {\n      \"status\": \"UP\",\n      \"details\": {\n        \"total\": 10737418240,\n        \"free\": 5368709120,\n        \"threshold\": 10485760,\n        \"exists\": true\n      }\n    },\n    \"livenessState\": {\n      \"status\": \"UP\"\n    },\n    \"readinessState\": {\n      \"status\": \"UP\"\n    }\n  }\n}\n\nRÉPONSE D'ERREUR (503 Service Unavailable):\n{\n  \"status\": \"DOWN\",\n  \"components\": {\n    \"db\": {\n      \"status\": \"DOWN\",\n      \"details\": {\n        \"error\": \"Connection refused\"\n      }\n    }\n  }\n}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
