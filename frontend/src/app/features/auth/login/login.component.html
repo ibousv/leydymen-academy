@@ -1,0 +1,44 @@
+<div class="auth-page">
+  <form class="auth-card" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+    <span class="auth-card__brand">{{ APP_NAME }}</span>
+    <h1 class="auth-card__title">Connexion</h1>
+    <p class="auth-card__subtitle">Accédez à votre espace de formation</p>
+
+    <app-input
+      label="Nom d'utilisateur ou email"
+      placeholder="ex. student1"
+      formControlName="username"
+      [error]="usernameError()"
+    />
+    <app-input
+      label="Mot de passe"
+      type="password"
+      placeholder="Votre mot de passe"
+      formControlName="password"
+      [error]="passwordError()"
+    />
+
+    <div class="auth-card__row">
+      <label class="auth-card__remember">
+        <input type="checkbox" formControlName="rememberMe" />
+        <span>Se souvenir de moi</span>
+      </label>
+      <a class="auth-card__link" [routerLink]="ROUTES.forgotPassword">Mot de passe oublié?</a>
+    </div>
+
+    @if (errorMessage(); as message) {
+      <p class="auth-card__error" role="alert">{{ message }}</p>
+    }
+
+    <app-button
+      [label]="loading() ? 'Connexion…' : 'Se connecter'"
+      [loading]="loading()"
+      (click)="onSubmit()"
+    />
+
+    <p class="auth-card__footer">
+      Pas encore de compte ?
+      <a class="auth-card__link" [routerLink]="ROUTES.register">S'inscrire</a>
+    </p>
+  </form>
+</div>

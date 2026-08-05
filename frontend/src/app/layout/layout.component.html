@@ -1,0 +1,9 @@
+<div class="layout__loading" [class.layout__loading--active]="isLoading()" aria-hidden="true"></div>
+<app-header (toggleSidebar)="toggleSidebar()" />
+<div class="layout__body">
+  <app-sidebar [open]="sidebarOpen()" (close)="closeSidebar()" />
+  <main class="layout__content">
+    <router-outlet />
+  </main>
+</div>
+<app-footer />

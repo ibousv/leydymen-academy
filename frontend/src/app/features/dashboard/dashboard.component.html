@@ -1,0 +1,427 @@
+<div class="dashboard">
+  <header class="page-header">
+    <div>
+      <h1 class="page-header__title">Tableau de bord</h1>
+      @if (user(); as user) {
+        <p class="page-header__subtitle">Bienvenue, {{ user.firstName }} {{ user.lastName }}</p>
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="dashboard__loading" aria-label="Chargement du tableau de bord">
+      <app-skeleton />
+      <app-skeleton />
+      <app-skeleton />
+    </div>
+  } @else if (errorMessage(); as error) {
+    <div class="dashboard__error" role="alert">
+      <p class="dashboard__error-text">{{ error }}</p>
+      <app-button label="Réessayer" size="small" (click)="reload()" />
+    </div>
+  } @else {
+    @switch (user()?.role) {
+      @case ('ADMIN') {
+        <section class="dashboard__section" aria-label="Indicateurs clés">
+          <div class="dashboard__kpis">
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Utilisateurs</span>
+              <span class="kpi-card__value">{{ adminStats()?.totalUsers }}</span>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Formations</span>
+              <span class="kpi-card__value">{{ adminStats()?.totalFormations }}</span>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Inscriptions</span>
+              <span class="kpi-card__value">{{ adminStats()?.totalEnrollments }}</span>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Revenus</span>
+              <span class="kpi-card__value">{{ formatPrice(adminStats()?.totalRevenue ?? 0) }}</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="dashboard__grid">
+          <section class="card dashboard__panel" aria-label="Activité récente">
+            <h2 class="dashboard__panel-title">Activité récente</h2>
+            <ul class="dashboard__activity">
+              @for (item of adminStats()?.recentActivity ?? []; track item.id) {
+                <li class="dashboard__activity-item">
+                  <span class="dashboard__activity-message">{{ item.message }}</span>
+                  <span class="dashboard__activity-date">{{ formatDate(item.date) }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+
+          <section class="card dashboard__panel" aria-label="Inscriptions au fil du temps">
+            <h2 class="dashboard__panel-title">Inscriptions au fil du temps</h2>
+            @if (adminStats()?.enrollmentsOverTime?.length) {
+              <div class="dashboard__bars">
+                @for (point of adminStats()?.enrollmentsOverTime ?? []; track point.month) {
+                  <div class="dashboard__bar-column">
+                    <div class="dashboard__bar-track">
+                      <div
+                        class="dashboard__bar-fill"
+                        [style.height.%]="barPercent(point.count, maxEnrollments())"
+                      ></div>
+                    </div>
+                    <span class="dashboard__bar-label">{{ formatMonth(point.month) }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="dashboard__empty">Aucune inscription enregistrée.</p>
+            }
+          </section>
+        </div>
+
+        <div class="dashboard__grid">
+          <section class="card dashboard__panel" aria-label="Répartition des étudiants par niveau">
+            <h2 class="dashboard__panel-title">Répartition par niveau</h2>
+            @if (adminStats()?.studentDistribution?.length) {
+              <ul class="dashboard__h-bars">
+                @for (point of adminStats()?.studentDistribution ?? []; track $index) {
+                  <li class="dashboard__h-bar">
+                    <span class="dashboard__h-bar-label">{{ levelLabel(point.level) }}</span>
+                    <div class="dashboard__h-bar-track">
+                      <div
+                        class="dashboard__h-bar-fill"
+                        [style.width.%]="barPercent(point.count, maxLevelCount())"
+                      ></div>
+                    </div>
+                    <span class="dashboard__h-bar-value">{{ point.count }}</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="dashboard__empty">Aucune donnée disponible.</p>
+            }
+          </section>
+
+          <section class="card dashboard__panel" aria-label="Revenus par formation">
+            <h2 class="dashboard__panel-title">Revenus par formation</h2>
+            @if (adminStats()?.revenueByFormation?.length) {
+              <ul class="dashboard__h-bars">
+                @for (item of adminStats()?.revenueByFormation ?? []; track item.formationId) {
+                  <li class="dashboard__h-bar">
+                    <span class="dashboard__h-bar-label" [title]="item.title">{{ item.title }}</span>
+                    <div class="dashboard__h-bar-track">
+                      <div
+                        class="dashboard__h-bar-fill dashboard__h-bar-fill--revenue"
+                        [style.width.%]="barPercent(item.revenue, maxRevenue())"
+                      ></div>
+                    </div>
+                    <span class="dashboard__h-bar-value">{{ formatPrice(item.revenue) }}</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="dashboard__empty">Aucun revenu enregistré.</p>
+            }
+          </section>
+        </div>
+
+        <div class="dashboard__grid">
+          <section class="card dashboard__panel" aria-label="Top formations">
+            <h2 class="dashboard__panel-title">Top formations</h2>
+            @if (adminStats()?.topFormations?.length) {
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Formation</th>
+                    <th>Inscriptions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of adminStats()?.topFormations ?? []; track item.formationId) {
+                    <tr>
+                      <td>
+                        <a class="dashboard__link" [routerLink]="ROUTES.formationsDetail(item.formationId)">
+                          {{ item.title }}
+                        </a>
+                      </td>
+                      <td>
+                        <app-badge [label]="item.enrollments + ' inscription(s)'" variant="primary" size="small" />
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <p class="dashboard__empty">Aucune formation publiée.</p>
+            }
+          </section>
+
+          <section class="card dashboard__panel" aria-label="Utilisateurs récents">
+            <h2 class="dashboard__panel-title">Utilisateurs récents</h2>
+            <ul class="dashboard__users">
+              @for (recentUser of adminStats()?.recentUsers ?? []; track recentUser.id) {
+                <li class="dashboard__user">
+                  <span class="dashboard__avatar" aria-hidden="true">{{ nameInitials(recentUser) }}</span>
+                  <div class="dashboard__user-info">
+                    <a class="dashboard__link" [routerLink]="ROUTES.studentsDetail(recentUser.id)">
+                      {{ recentUser.firstName }} {{ recentUser.lastName }}
+                    </a>
+                    <span class="dashboard__user-email">{{ recentUser.email }}</span>
+                  </div>
+                  <app-badge [label]="recentUser.role" variant="neutral" size="small" />
+                </li>
+              }
+            </ul>
+          </section>
+        </div>
+      }
+
+      @case ('INSTRUCTOR') {
+        <section class="dashboard__section" aria-label="Indicateurs clés">
+          <div class="dashboard__kpis">
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Mes formations</span>
+              <span class="kpi-card__value">{{ instructorStats().formations }}</span>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Étudiants inscrits</span>
+              <span class="kpi-card__value">{{ instructorStats().students }}</span>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Complétion moyenne</span>
+              <span class="kpi-card__value">{{ instructorStats().completionRate }}%</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="dashboard__grid">
+          <section class="card dashboard__panel" aria-label="Mes formations">
+            <h2 class="dashboard__panel-title">Mes formations</h2>
+            @if (instructorFormations().length) {
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Formation</th>
+                    <th>Étudiants</th>
+                    <th>Complétion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (stat of instructorFormations(); track stat.formation.id) {
+                    <tr>
+                      <td>
+                        <a class="dashboard__link" [routerLink]="ROUTES.formationsDetail(stat.formation.id)">
+                          {{ stat.formation.title }}
+                        </a>
+                      </td>
+                      <td>{{ stat.students }}</td>
+                      <td>
+                        <div class="dashboard__progress-cell">
+                          <app-progress [percentage]="stat.completionRate" variant="primary" />
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <p class="dashboard__empty">Aucune inscription sur vos formations.</p>
+            }
+          </section>
+
+          <section class="card dashboard__panel" aria-label="Inscriptions récentes">
+            <h2 class="dashboard__panel-title">Inscriptions récentes</h2>
+            <ul class="dashboard__activity">
+              @for (enrollment of instructorRecentEnrollments(); track enrollment.id) {
+                <li class="dashboard__activity-item">
+                  <span class="dashboard__activity-message">
+                    {{ enrollment.student?.firstName }} {{ enrollment.student?.lastName }}
+                    s'est inscrit à « {{ enrollment.formation?.title }} »
+                  </span>
+                  <span class="dashboard__activity-date">{{ formatDate(enrollment.enrollmentDate) }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        </div>
+
+        <div class="dashboard__grid">
+          <section class="card dashboard__panel" aria-label="Performance des étudiants">
+            <h2 class="dashboard__panel-title">Performance des étudiants</h2>
+            @if (instructorStudents().length) {
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Étudiant</th>
+                    <th>Progression moyenne</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (performance of instructorStudents(); track performance.student.id) {
+                    <tr>
+                      <td>
+                        <a class="dashboard__link" [routerLink]="ROUTES.studentsDetail(performance.student.id)">
+                          {{ performance.student.firstName }} {{ performance.student.lastName }}
+                        </a>
+                      </td>
+                      <td>
+                        <div class="dashboard__progress-cell">
+                          <app-progress [percentage]="performance.avgCompletion" variant="success" />
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <p class="dashboard__empty">Aucun étudiant inscrit pour le moment.</p>
+            }
+          </section>
+
+          <section class="card dashboard__panel" aria-label="Tendance de la classe">
+            <h2 class="dashboard__panel-title">Tendance de la classe</h2>
+            @if (instructorTrend().length) {
+              <div class="dashboard__bars">
+                @for (point of instructorTrend(); track point.month) {
+                  <div class="dashboard__bar-column">
+                    <div class="dashboard__bar-track">
+                      <div
+                        class="dashboard__bar-fill"
+                        [style.height.%]="barPercent(point.count, maxInstructorTrend())"
+                      ></div>
+                    </div>
+                    <span class="dashboard__bar-label">{{ formatMonth(point.month) }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="dashboard__empty">Aucune inscription pour le moment.</p>
+            }
+          </section>
+        </div>
+      }
+
+      @case ('STUDENT') {
+        <section class="dashboard__section" aria-label="Statistiques d'apprentissage">
+          <div class="dashboard__kpis">
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Inscriptions</span>
+              <span class="kpi-card__value">{{ studentStats()?.totalEnrollments }}</span>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Cours en cours</span>
+              <span class="kpi-card__value">{{ studentStats()?.inProgressCourses }}</span>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Cours terminés</span>
+              <span class="kpi-card__value">{{ studentStats()?.completedCourses }}</span>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-card__label">Progression moyenne</span>
+              <span class="kpi-card__value">{{ studentStats()?.averageCompletion }}%</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="dashboard__section" aria-label="Cours en cours">
+          <h2 class="dashboard__section-title">Cours en cours</h2>
+          @if (studentInProgress().length) {
+            <div class="dashboard__cards">
+              @for (enrollment of studentInProgress(); track enrollment.id) {
+                <app-card
+                  [title]="enrollment.formation?.title ?? 'Formation'"
+                  [subtitle]="formationInstructorLabel(enrollment.formation)"
+                >
+                  <div class="dashboard__card-body">
+                    <app-progress [percentage]="enrollment.completionPercent" label="Progression" />
+                    <a class="btn btn-primary btn-sm dashboard__card-action" [routerLink]="ROUTES.coursePlayer(enrollment.id)">
+                      Continuer
+                    </a>
+                  </div>
+                </app-card>
+              }
+            </div>
+          } @else {
+            <p class="dashboard__empty">Aucun cours en cours.</p>
+          }
+        </section>
+
+        <section class="dashboard__section" aria-label="Cours recommandés">
+          <h2 class="dashboard__section-title">Cours recommandés</h2>
+          @if (recommendedFormations().length) {
+            <div class="dashboard__cards">
+              @for (formation of recommendedFormations(); track formation.id) {
+                <app-card
+                  [title]="formation.title"
+                  [subtitle]="formationInstructorLabel(formation)"
+                  [image]="formation.image"
+                  [elevation]="2"
+                  [interactive]="true"
+                  (cardClick)="goToFormation(formation.id)"
+                >
+                  <div class="dashboard__card-body">
+                    <div class="dashboard__card-meta">
+                      <span>{{ levelLabel(formation.level) }}</span>
+                      <span>★ {{ formation.rating.toFixed(1) }} ({{ formation.ratingCount }})</span>
+                    </div>
+                    <div class="dashboard__card-meta">
+                      <span>{{ formatPrice(formation.price) }}</span>
+                      <span>{{ formation.studentsCount }} étudiant(s)</span>
+                    </div>
+                  </div>
+                </app-card>
+              }
+            </div>
+          } @else {
+            <p class="dashboard__empty">Aucune recommandation disponible.</p>
+          }
+        </section>
+
+        <div class="dashboard__grid">
+          <section class="card dashboard__panel" aria-label="Activité récente">
+            <h2 class="dashboard__panel-title">Activité récente</h2>
+            <ul class="dashboard__activity">
+              @for (item of studentStats()?.recentActivity ?? []; track item.id) {
+                <li class="dashboard__activity-item">
+                  <span class="dashboard__activity-message">{{ item.message }}</span>
+                  <span class="dashboard__activity-date">{{ formatDate(item.date) }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+
+          <section class="card dashboard__panel" aria-label="Statut des cours">
+            <h2 class="dashboard__panel-title">Statut des cours</h2>
+            @if (studentEnrollments().length) {
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Formation</th>
+                    <th>Progression</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (enrollment of studentEnrollments(); track enrollment.id) {
+                    <tr>
+                      <td>{{ enrollment.formation?.title ?? 'Formation' }}</td>
+                      <td>{{ enrollment.completionPercent }}%</td>
+                      <td>
+                        <app-badge
+                          [label]="statusLabel(enrollment.status)"
+                          [variant]="statusVariant(enrollment.status)"
+                          size="small"
+                        />
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <p class="dashboard__empty">Vous n'êtes inscrit à aucune formation.</p>
+            }
+          </section>
+        </div>
+      }
+    }
+  }
+</div>

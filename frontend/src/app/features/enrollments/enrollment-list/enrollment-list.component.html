@@ -1,0 +1,211 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Inscriptions</h1>
+    <p class="page-header__subtitle">
+      @if (role() === 'STUDENT') {
+        Suivez la progression de vos formations
+      } @else {
+        Gérez les inscriptions aux formations
+      }
+    </p>
+  </div>
+</div>
+
+@if (notice()) {
+  <div class="enrollments__notice" role="status">
+    <p>{{ notice() }}</p>
+  </div>
+}
+@if (errorMessage()) {
+  <div class="enrollments__error" role="alert">
+    <p>{{ errorMessage() }}</p>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card empty-state">
+    <p>Chargement des inscriptions…</p>
+  </div>
+} @else if (role() === 'STUDENT') {
+  <nav class="enrollments__tabs" aria-label="Statut des inscriptions">
+    @for (tab of tabs; track tab.value) {
+      <button
+        class="enrollments__tab"
+        [class.enrollments__tab--active]="tab.value === activeTab()"
+        (click)="setTab(tab.value)"
+        type="button"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+
+  <div class="enrollments__toolbar">
+    <app-select
+      label="Trier par"
+      [options]="studentSortOptions"
+      [selected]="studentSort()"
+      (selectionChange)="onStudentSortChange($event)"
+    />
+  </div>
+
+  @if (sortedEnrollments().length === 0) {
+    <div class="card empty-state">
+      <h2 class="empty-state__title">Aucune inscription</h2>
+      <p class="empty-state__text">Aucune formation dans cet état pour le moment.</p>
+    </div>
+  } @else {
+    <div class="enrollments__cards">
+      @for (enrollment of sortedEnrollments(); track enrollment.id) {
+        <app-card
+          [title]="formationTitle(enrollment)"
+          [subtitle]="formationSubtitle(enrollment.formation)"
+          [image]="enrollment.formation?.image"
+        >
+          <div class="enrollments__card-body">
+            <app-progress [percentage]="enrollment.completionPercent" label="Progression" />
+            <p class="enrollments__card-date">Inscrit le {{ formatDate(enrollment.enrollmentDate) }}</p>
+            <div class="enrollments__card-actions">
+              <a class="btn btn-primary btn-sm" [routerLink]="ROUTES.coursePlayer(enrollment.id)">Continuer</a>
+              @if (enrollment.status === 'in_progress') {
+                <app-button
+                  label="Abandonner le cours"
+                  variant="tertiary"
+                  size="small"
+                  (click)="dropCourse(enrollment)"
+                />
+              }
+            </div>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+} @else {
+  <div class="card enrollments__toolbar enrollments__toolbar--staff">
+    <app-select
+      label="Formation"
+      [options]="formationOptions()"
+      [selected]="selectedFormationId()"
+      (selectionChange)="onFormationChange($event)"
+    />
+    <app-select
+      label="Statut"
+      [options]="staffStatusOptions"
+      [selected]="staffStatus()"
+      (selectionChange)="onStaffStatusChange($event)"
+    />
+  </div>
+
+  @if (selectedFormationId() !== null) {
+    <div class="enrollments__actions">
+      <span class="enrollments__selection">
+        {{ selectedIds().size }} inscription(s) sélectionnée(s)
+      </span>
+      <app-select
+        label="Changer le statut"
+        [options]="bulkStatusOptions"
+        [selected]="bulkStatus()"
+        (selectionChange)="onBulkStatusChange($event)"
+      />
+      <app-button
+        label="Appliquer"
+        variant="secondary"
+        size="small"
+        [disabled]="selectedIds().size === 0 || bulkStatus() === ''"
+        [loading]="bulkApplying()"
+        (click)="applyBulkStatus()"
+      />
+      <app-button
+        label="Exporter CSV"
+        variant="secondary"
+        size="small"
+        [disabled]="selectedIds().size === 0"
+        (click)="exportCsv()"
+      />
+    </div>
+
+    @if (staffEnrollments().length === 0) {
+      <div class="card empty-state">
+        <h2 class="empty-state__title">Aucune inscription</h2>
+        <p class="empty-state__text">Aucun étudiant n'est inscrit à cette formation avec ce statut.</p>
+      </div>
+    } @else {
+      <div class="table-wrapper card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="enrollments__checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="selectedEnrollments().length === staffEnrollments().length"
+                  (change)="toggleAll($event)"
+                  aria-label="Tout sélectionner"
+                />
+              </th>
+              <th>Étudiant</th>
+              <th>Date d'inscription</th>
+              <th>Progression</th>
+              <th>Note</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (enrollment of staffEnrollments(); track enrollment.id) {
+              <tr>
+                <td class="enrollments__checkbox">
+                  <input
+                    type="checkbox"
+                    [checked]="selectedIds().has(enrollment.id)"
+                    (change)="toggleEnrollment(enrollment.id, $event)"
+                    [attr.aria-label]="'Sélectionner ' + studentFullName(enrollment)"
+                  />
+                </td>
+                <td>
+                  <a class="enrollments__student" [routerLink]="ROUTES.studentsDetail(enrollment.studentId)">
+                    {{ studentFullName(enrollment) }}
+                  </a>
+                </td>
+                <td>{{ formatDate(enrollment.enrollmentDate) }}</td>
+                <td>
+                  <app-progress [percentage]="enrollment.completionPercent" label="Progression" />
+                </td>
+                <td>{{ formatGrade(enrollment) }}</td>
+                <td>
+                  <app-badge
+                    [variant]="statusVariant(enrollment.status)"
+                    [label]="statusLabel(enrollment.status)"
+                  />
+                </td>
+                <td>
+                  <div class="enrollments__row-actions">
+                    <a class="btn btn-secondary btn-sm" [routerLink]="ROUTES.studentsDetail(enrollment.studentId)">
+                      Voir
+                    </a>
+                    @if (enrollment.status !== 'completed') {
+                      <app-button
+                        label="Terminée"
+                        variant="secondary"
+                        size="small"
+                        (click)="markAsCompleted(enrollment)"
+                      />
+                    }
+                    @if (enrollment.status !== 'dropped') {
+                      <app-button
+                        label="Abandonner"
+                        variant="tertiary"
+                        size="small"
+                        (click)="dropEnrollment(enrollment)"
+                      />
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+}

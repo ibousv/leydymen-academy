@@ -1,0 +1,99 @@
+// ============================================================
+// LEYDYMEN ACADEMY — Mixins (spec_frontend.md §2.6, §9)
+// Breakpoints, typographie, focus
+// ============================================================
+
+@use 'variables' as *;
+
+// ---------- Breakpoints (spec §2.6) ----------
+// Mobile : < 576px — Tablet : 576–768px — Desktop : 768–1024px — Large Desktop : > 1024px
+
+@mixin mobile {
+  @media (max-width: calc(#{$breakpoint-mobile} - 1px)) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: $breakpoint-mobile) and (max-width: calc(#{$breakpoint-tablet} - 1px)) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: $breakpoint-tablet) and (max-width: calc(#{$breakpoint-desktop} - 1px)) {
+    @content;
+  }
+}
+
+@mixin large-desktop {
+  @media (min-width: $breakpoint-desktop) {
+    @content;
+  }
+}
+
+// Variantes "min-width" (mobile-first)
+@mixin min($bp) {
+  @media (min-width: $bp) {
+    @content;
+  }
+}
+
+@mixin max($bp) {
+  @media (max-width: $bp) {
+    @content;
+  }
+}
+
+// ---------- Typographie ----------
+@mixin heading($size, $line-height) {
+  font-size: $size;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height;
+  margin: 0;
+}
+
+@mixin h1 {
+  @include heading($font-size-h1, $line-height-heading-lg);
+}
+
+@mixin h2 {
+  @include heading($font-size-h2, $line-height-heading-lg);
+}
+
+@mixin h3 {
+  @include heading($font-size-h3, $line-height-heading-sm);
+}
+
+@mixin h4 {
+  @include heading($font-size-h4, $line-height-heading-sm);
+}
+
+@mixin h5 {
+  @include heading($font-size-h5, $line-height-body);
+}
+
+@mixin h6 {
+  @include heading($font-size-h6, $line-height-body);
+}
+
+// ---------- Accessibilité ----------
+@mixin focus-visible {
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+// ---------- Élévation ----------
+@mixin elevation($level: 1) {
+  @if $level == 1 {
+    box-shadow: $shadow-elevation-1;
+  } @else if $level == 2 {
+    box-shadow: $shadow-elevation-2;
+  } @else if $level == 3 {
+    box-shadow: $shadow-elevation-3;
+  } @else if $level == 4 {
+    box-shadow: $shadow-elevation-4;
+  }
+}

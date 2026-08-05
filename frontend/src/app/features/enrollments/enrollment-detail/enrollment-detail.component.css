@@ -1,0 +1,102 @@
+.enrollment-detail__back {
+  display: inline-block;
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-small);
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.enrollment-detail__back:hover {
+  text-decoration: underline;
+}
+
+.enrollment-detail__error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-medium);
+  background-color: var(--color-error-light);
+}
+
+.enrollment-detail__error p {
+  margin: 0;
+  font-size: var(--font-size-small);
+  color: var(--color-error);
+}
+
+.enrollment-detail__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-lg);
+}
+
+.enrollment-detail__grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.enrollment-detail__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+}
+
+.enrollment-detail__aside-title {
+  margin: 0;
+  font-size: var(--font-size-h3);
+  color: var(--color-gray-900);
+}
+
+.enrollment-detail__info {
+  width: 100%;
+  margin: var(--space-md) 0 0;
+  font-size: var(--font-size-small);
+}
+
+.enrollment-detail__info dt {
+  color: var(--color-gray-500);
+  margin-top: var(--space-sm);
+}
+
+.enrollment-detail__info dd {
+  margin: var(--space-xs) 0 0;
+  color: var(--color-gray-900);
+  font-weight: 600;
+}
+
+.enrollment-detail__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.enrollment-detail__section-title {
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-h3);
+  color: var(--color-gray-900);
+}
+
+.enrollment-detail__kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.enrollment-detail__progress {
+  padding: var(--space-md) var(--space-lg);
+}
+
+@media (max-width: 992px) {
+  .enrollment-detail__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .enrollment-detail__kpis {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,17 @@
+<div class="admin-layout">
+  <nav class="admin-layout__nav" aria-label="Administration">
+    @for (item of adminNav; track item.route) {
+      <a
+        class="admin-layout__link"
+        [routerLink]="item.route"
+        routerLinkActive="admin-layout__link--active"
+        [routerLinkActiveOptions]="{ exact: item.exact }"
+      >
+        {{ item.label }}
+      </a>
+    }
+  </nav>
+  <div class="admin-layout__content">
+    <router-outlet />
+  </div>
+</div>

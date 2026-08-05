@@ -1,0 +1,369 @@
+<div class="page-header">
+  <div>
+    <p class="page-header__subtitle">
+      <a [routerLink]="ROUTES.formations" class="page-header__back">← Retour aux formations</a>
+    </p>
+    <h1 class="page-header__title">{{ isEdit() ? 'Modifier la formation' : 'Créer une formation' }}</h1>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card card--padded empty-state">
+    <p>Chargement de la formation…</p>
+  </div>
+} @else if (errorMessage() && !isEdit()) {
+  <div class="card card--padded empty-state">
+    <h2 class="empty-state__title">Formation introuvable</h2>
+    <p class="empty-state__text">{{ errorMessage() }}</p>
+  </div>
+} @else {
+  <nav class="form-steps" aria-label="Étapes du formulaire">
+    @for (label of stepLabels; track label; let index = $index) {
+      <div
+        class="form-steps__item"
+        [class.form-steps__item--active]="step() === index + 1"
+        [class.form-steps__item--done]="step() > index + 1"
+      >
+        <span class="form-steps__number" aria-hidden="true">{{ index + 1 }}</span>
+        <span class="form-steps__label">{{ label }}</span>
+      </div>
+    }
+  </nav>
+
+  @if (errorMessage()) {
+    <div class="form-error" role="alert">
+      <p>{{ errorMessage() }}</p>
+    </div>
+  }
+
+  <form [formGroup]="form" class="form-panel" novalidate>
+    @if (step() === 1) {
+      <div class="form-grid">
+        <app-input
+          label="Titre de la formation"
+          placeholder="ex. Développement Web Full-Stack"
+          formControlName="title"
+          [error]="titleError()"
+        />
+        <app-select
+          label="Catégorie"
+          [options]="categoryOptions"
+          [selected]="form.controls.category.value"
+          (selectionChange)="onCategoryChange($event)"
+        />
+        <app-select
+          label="Niveau"
+          [options]="levelOptions"
+          [selected]="form.controls.level.value"
+          (selectionChange)="onLevelChange($event)"
+        />
+        <app-input
+          label="Prix (FCFA)"
+          type="number"
+          placeholder="ex. 450000"
+          formControlName="price"
+          [error]="priceError()"
+        />
+      </div>
+      <div class="form-field">
+        <label class="form-field__label form-field__label--required" for="formation-description">Description</label>
+        <textarea
+          id="formation-description"
+          class="input"
+          rows="5"
+          formControlName="description"
+          placeholder="Décrivez la formation, ses objectifs et son public…"
+        ></textarea>
+        @if (descriptionError()) {
+          <p class="form-field__error">{{ descriptionError() }}</p>
+        }
+      </div>
+      <div class="form-field">
+        <span class="form-field__label">Image de couverture</span>
+        <div class="image-upload">
+          @if (imagePreview()) {
+            <img class="image-upload__preview" [src]="imagePreview()" alt="Aperçu de l'image de la formation" />
+          }
+          <div class="image-upload__actions">
+            <input
+              #imageInput
+              class="image-upload__input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              (change)="onImageSelected($event)"
+            />
+            <button type="button" class="btn" (click)="imageInput.click()">
+              {{ imagePreview() ? 'Changer l\'image' : 'Choisir une image' }}
+            </button>
+            @if (imagePreview() && !imageUploading()) {
+              <button type="button" class="btn btn-link" (click)="removeImage()">Retirer l'image</button>
+            }
+          </div>
+          @if (imageUploading()) {
+            <p class="form-field__hint">Téléversement en cours…</p>
+          }
+          @if (imageError()) {
+            <p class="form-field__error">{{ imageError() }}</p>
+          }
+          <p class="form-field__hint">JPG, PNG, WebP ou GIF — 2 Mo maximum. Format conseillé : 16:9.</p>
+        </div>
+      </div>
+    }
+
+    @if (step() === 2) {
+      <div class="form-grid">
+        <app-input label="Date de début" type="date" formControlName="startDate" />
+        <app-input label="Date de fin" type="date" formControlName="endDate" />
+        <app-input label="Places maximales" type="number" placeholder="ex. 50" formControlName="maxStudents" />
+        <app-select
+          label="Statut"
+          [options]="statusOptions"
+          [selected]="form.controls.status.value"
+          (selectionChange)="onStatusChange($event)"
+        />
+      </div>
+    }
+
+    @if (step() === 3) {
+      @if (isEdit()) {
+        <div class="curriculum-toolbar">
+          <div>
+            <h2 class="curriculum-toolbar__title">Curriculum</h2>
+            <p class="form-panel__hint">Gérez les modules et les leçons de la formation.</p>
+          </div>
+          <app-button label="Ajouter un module" (click)="openModuleEditor()" />
+        </div>
+        @if (curriculumError()) {
+          <div class="form-error" role="alert">
+            <p>{{ curriculumError() }}</p>
+          </div>
+        }
+        @if (moduleEditorOpen()) {
+          <div class="card card--padded editor">
+            <h3 class="editor__title">{{ moduleEditId() === null ? 'Nouveau module' : 'Modifier le module' }}</h3>
+            <div class="editor__fields">
+              <app-input
+                label="Titre du module"
+                placeholder="ex. Fondamentaux"
+                [formControl]="moduleTitleControl"
+                [error]="moduleTitleError()"
+              />
+              <app-input label="Description (optionnel)" placeholder="ex. Les bases indispensables" [formControl]="moduleDescriptionControl" />
+            </div>
+            <div class="editor__actions">
+              <app-button label="Annuler" variant="secondary" (click)="closeModuleEditor()" />
+              <app-button label="Enregistrer le module" [loading]="curriculumBusy()" (click)="saveModule()" />
+            </div>
+          </div>
+        }
+        @for (module of modules(); track module.id) {
+          <section class="card curriculum">
+            <div class="curriculum__header">
+              <div>
+                <h3 class="curriculum__title">{{ module.title }}</h3>
+                @if (module.description) {
+                  <p class="curriculum__description">{{ module.description }}</p>
+                }
+              </div>
+              <div class="curriculum__header-actions">
+                <app-badge [label]="module.lessons.length + ' leçon(s)'" variant="neutral" size="small" />
+                <button type="button" class="btn btn-link" (click)="openModuleEditor(module)">Modifier</button>
+                <button type="button" class="btn btn-link btn-link--danger" (click)="askDeleteModule(module.id)">Supprimer</button>
+              </div>
+            </div>
+            @if (deleteModuleId() === module.id) {
+              <div class="confirm-bar">
+                <span>Supprimer ce module et ses leçons ?</span>
+                <div class="confirm-bar__actions">
+                  <app-button
+                    label="Supprimer"
+                    variant="danger"
+                    size="small"
+                    [loading]="curriculumBusy()"
+                    (click)="confirmDeleteModule(module.id)"
+                  />
+                  <app-button label="Annuler" variant="secondary" size="small" (click)="cancelDeleteModule()" />
+                </div>
+              </div>
+            }
+            <ul class="curriculum__lessons">
+              @for (lesson of module.lessons; track lesson.id) {
+                <li class="curriculum__lesson">
+                  <div class="curriculum__lesson-info">
+                    <span class="curriculum__lesson-title">{{ lesson.title }}</span>
+                    @if (lesson.description) {
+                      <span class="curriculum__lesson-desc">{{ lesson.description }}</span>
+                    }
+                  </div>
+                  <div class="curriculum__lesson-actions">
+                    @if (lesson.videoUrl) {
+                      <app-badge label="vidéo" variant="success" size="small" />
+                    }
+                    <span class="curriculum__duration">{{ lesson.durationMinutes }} min</span>
+                    <app-badge
+                      [label]="lesson.status === 'published' ? 'Publiée' : 'Brouillon'"
+                      [variant]="lesson.status === 'published' ? 'success' : 'neutral'"
+                      size="small"
+                    />
+                    <button type="button" class="btn btn-link" (click)="openLessonEditor(module.id, lesson)">Modifier</button>
+                    <button type="button" class="btn btn-link btn-link--danger" (click)="askDeleteLesson(lesson.id)">Supprimer</button>
+                  </div>
+                </li>
+                @if (deleteLessonId() === lesson.id) {
+                  <li class="confirm-bar">
+                    <span>Supprimer cette leçon ?</span>
+                    <div class="confirm-bar__actions">
+                      <app-button
+                        label="Supprimer"
+                        variant="danger"
+                        size="small"
+                        [loading]="curriculumBusy()"
+                        (click)="confirmDeleteLesson(lesson.id)"
+                      />
+                      <app-button label="Annuler" variant="secondary" size="small" (click)="cancelDeleteLesson()" />
+                    </div>
+                  </li>
+                }
+              } @empty {
+                <li class="curriculum__empty">Aucune leçon dans ce module.</li>
+              }
+            </ul>
+            @if (lessonEditorOpen() && lessonModuleId() === module.id) {
+              <div class="editor editor--lesson">
+                <h3 class="editor__title">{{ lessonEditId() === null ? 'Nouvelle leçon' : 'Modifier la leçon' }}</h3>
+                <div class="editor__fields">
+                  <app-input
+                    label="Titre de la leçon"
+                    placeholder="ex. Introduction au développement web"
+                    [formControl]="lessonTitleControl"
+                    [error]="lessonTitleError()"
+                  />
+                  <app-input label="Description (optionnel)" [formControl]="lessonDescriptionControl" />
+                  <div class="editor__grid">
+                    <app-input
+                      label="Durée (minutes)"
+                      type="number"
+                      placeholder="ex. 30"
+                      [formControl]="lessonDurationControl"
+                      [error]="lessonDurationError()"
+                    />
+                    <app-select
+                      label="Statut"
+                      [options]="lessonStatusOptions"
+                      [selected]="lessonStatusControl.value"
+                      (selectionChange)="onLessonStatusChange($event)"
+                    />
+                  </div>
+                </div>
+                <div class="form-field">
+                  <span class="form-field__label">Vidéo de la leçon</span>
+                  @if (lessonVideoUrlControl.value) {
+                    <video class="editor__video" [src]="lessonVideoUrlControl.value" controls></video>
+                  }
+                  <div class="editor__video-actions">
+                    <input
+                      #videoInput
+                      class="image-upload__input"
+                      type="file"
+                      accept="video/mp4,video/webm,video/ogg"
+                      (change)="onVideoSelected($event)"
+                    />
+                    <button type="button" class="btn" (click)="videoInput.click()">
+                      {{ lessonVideoUrlControl.value ? 'Changer la vidéo' : 'Téléverser une vidéo' }}
+                    </button>
+                    @if (lessonVideoUrlControl.value && !videoUploading()) {
+                      <button type="button" class="btn btn-link btn-link--danger" (click)="removeVideo()">Retirer la vidéo</button>
+                    }
+                  </div>
+                  @if (videoUploading()) {
+                    <p class="form-field__hint">Téléversement en cours…</p>
+                  }
+                  @if (videoError()) {
+                    <p class="form-field__error">{{ videoError() }}</p>
+                  }
+                  <p class="form-field__hint">MP4, WebM ou OGG — 500 Mo maximum.</p>
+                </div>
+                <div class="editor__actions">
+                  <app-button label="Annuler" variant="secondary" (click)="closeLessonEditor()" />
+                  <app-button label="Enregistrer la leçon" [loading]="curriculumBusy()" (click)="saveLesson()" />
+                </div>
+              </div>
+            }
+            <div class="curriculum__footer">
+              <button type="button" class="btn btn-link" (click)="openLessonEditor(module.id)">+ Ajouter une leçon</button>
+            </div>
+          </section>
+        } @empty {
+          <div class="card card--padded empty-state">
+            <h2 class="empty-state__title">Aucun module</h2>
+            <p class="empty-state__text">Ajoutez votre premier module pour structurer le curriculum.</p>
+          </div>
+        }
+      } @else {
+        <div class="card card--padded empty-state">
+          <h2 class="empty-state__title">Curriculum</h2>
+          <p class="empty-state__text">
+            Les modules et leçons seront ajoutés à la formation après sa création.
+          </p>
+        </div>
+      }
+    }
+
+    @if (step() === 4) {
+      <div class="card card--padded">
+        <h2 class="card__title">Aperçu de la formation</h2>
+        <dl class="preview">
+          <div class="preview__row">
+            <dt>Titre</dt>
+            <dd>{{ form.controls.title.value }}</dd>
+          </div>
+          <div class="preview__row">
+            <dt>Catégorie</dt>
+            <dd>{{ form.controls.category.value }}</dd>
+          </div>
+          <div class="preview__row">
+            <dt>Niveau</dt>
+            <dd>{{ levelLabel(form.controls.level.value) }}</dd>
+          </div>
+          <div class="preview__row">
+            <dt>Prix</dt>
+            <dd>{{ form.controls.price.value }} FCFA</dd>
+          </div>
+          <div class="preview__row">
+            <dt>Date de début</dt>
+            <dd>{{ form.controls.startDate.value || '—' }}</dd>
+          </div>
+          <div class="preview__row">
+            <dt>Date de fin</dt>
+            <dd>{{ form.controls.endDate.value || '—' }}</dd>
+          </div>
+          <div class="preview__row">
+            <dt>Places maximales</dt>
+            <dd>{{ form.controls.maxStudents.value }}</dd>
+          </div>
+          <div class="preview__row">
+            <dt>Statut</dt>
+            <dd>{{ statusLabel(form.controls.status.value) }}</dd>
+          </div>
+          <div class="preview__row preview__row--full">
+            <dt>Description</dt>
+            <dd>{{ form.controls.description.value }}</dd>
+          </div>
+        </dl>
+      </div>
+    }
+
+    <div class="form-actions">
+      @if (step() > 1) {
+        <app-button label="Précédent" variant="secondary" (click)="previousStep()" />
+      }
+      <a class="btn btn-link" [routerLink]="cancelRoute()">Annuler</a>
+      @if (step() < 4) {
+        <app-button label="Suivant" (click)="nextStep()" />
+      } @else {
+        <app-button label="Enregistrer le brouillon" variant="secondary" [loading]="saving()" (click)="save(false)" />
+        <app-button label="Publier" [loading]="saving()" (click)="save(true)" />
+      }
+    </div>
+  </form>
+}

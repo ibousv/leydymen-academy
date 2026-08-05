@@ -1,0 +1,242 @@
+<div class="formations">
+  <header class="formations__header">
+    <div>
+      <h1 class="formations__title">Formations</h1>
+      <p class="formations__subtitle">Découvrez et gérez les formations de l'académie</p>
+    </div>
+    @if (isStaff()) {
+      <app-button
+        label="Créer une formation"
+        icon="+"
+        (click)="goToCreate()"
+      />
+    }
+  </header>
+
+  @if (notice(); as message) {
+    <p class="formations__notice" role="status">{{ message }}</p>
+  }
+
+  @if (errorMessage(); as error) {
+    <div class="formations__error" role="alert">
+      <p class="formations__error-text">{{ error }}</p>
+      <app-button label="Réessayer" size="small" (click)="reload()" />
+    </div>
+  }
+
+  <section class="card formations__toolbar" aria-label="Filtres des formations">
+    <form class="formations__filters" (ngSubmit)="onSearch()">
+      <div class="formations__search">
+        <app-input
+          label="Rechercher"
+          placeholder="Titre, catégorie ou niveau"
+          [value]="search()"
+          (valueChange)="search.set($event)"
+          (keyup.enter)="onSearch()"
+        />
+        <app-button label="Rechercher" size="small" (click)="onSearch()" />
+      </div>
+      <app-select
+        label="Catégorie"
+        [options]="categoryOptions"
+        [selected]="category()"
+        (selectionChange)="onCategoryChange($event)"
+      />
+      <app-select
+        label="Niveau"
+        [options]="levelOptions"
+        [selected]="level()"
+        (selectionChange)="onLevelChange($event)"
+      />
+      @if (isStaff()) {
+        <app-select
+          label="Statut"
+          [options]="statusOptions"
+          [selected]="status()"
+          (selectionChange)="onStatusChange($event)"
+        />
+      }
+      <div class="formations__price">
+        <app-input
+          label="Prix min (FCFA)"
+          type="number"
+          placeholder="0"
+          [value]="priceMin()"
+          (valueChange)="onPriceMinChange($event)"
+        />
+        <app-input
+          label="Prix max (FCFA)"
+          type="number"
+          placeholder="Illimité"
+          [value]="priceMax()"
+          (valueChange)="onPriceMaxChange($event)"
+        />
+      </div>
+      <app-select
+        label="Tri"
+        [options]="sortOptions"
+        [selected]="sort()"
+        (selectionChange)="onSortChange($event)"
+      />
+    </form>
+
+    <div class="formations__view-toggle" aria-label="Changer l'affichage">
+      <app-button
+        label="Grille"
+        size="small"
+        [variant]="viewMode() === 'grid' ? 'primary' : 'secondary'"
+        (click)="setViewMode('grid')"
+      />
+      <app-button
+        label="Liste"
+        size="small"
+        [variant]="viewMode() === 'list' ? 'primary' : 'secondary'"
+        (click)="setViewMode('list')"
+      />
+    </div>
+  </section>
+
+  @if (loading()) {
+    <div class="formations__loading" aria-label="Chargement des formations">
+      <app-skeleton />
+      <app-skeleton />
+      <app-skeleton />
+    </div>
+  } @else if (pagedFormations().length === 0) {
+    <div class="card formations__empty">
+      <p class="formations__empty-text">Aucune formation ne correspond à vos critères.</p>
+      @if (isStaff()) {
+        <app-button label="Créer une formation" (click)="goToCreate()" />
+      }
+    </div>
+  } @else if (viewMode() === 'grid') {
+    <div class="formations__grid">
+      @for (formation of pagedFormations(); track formation.id) {
+        <app-card
+          [title]="formation.title"
+          [subtitle]="formation.instructor.firstName + ' ' + formation.instructor.lastName"
+          [image]="formation.image"
+          [elevation]="1"
+          [interactive]="true"
+          (cardClick)="goToFormation(formation.id)"
+        >
+          <div class="formations__card-body">
+            <div class="formations__card-meta">
+              <app-badge [label]="levelLabel(formation.level)" variant="neutral" size="small" />
+              <span>★ {{ formation.rating.toFixed(1) }} ({{ formation.ratingCount }})</span>
+            </div>
+            <div class="formations__card-meta">
+              <span class="formations__card-price">{{ formatPrice(formation.price) }}</span>
+              <span>{{ formation.studentsCount }} étudiant(s)</span>
+            </div>
+            @if (isStaff()) {
+              <div class="formations__card-meta">
+                <app-badge [label]="statusLabel(formation.status)" [variant]="statusVariant(formation.status)" size="small" />
+              </div>
+            }
+            @if (isCreator(formation)) {
+              <div class="formations__card-actions">
+                <a class="btn btn-secondary btn-sm" [routerLink]="ROUTES.formationsEdit(formation.id)">Modifier</a>
+                <app-button
+                  [label]="formation.status === 'published' ? 'Dépublier' : 'Publier'"
+                  size="small"
+                  variant="secondary"
+                  (click)="toggleStatus(formation)"
+                />
+                @if (canDelete(formation)) {
+                  <app-button label="Supprimer" size="small" variant="danger" (click)="requestDelete(formation)" />
+                }
+              </div>
+            }
+          </div>
+        </app-card>
+      }
+    </div>
+  } @else {
+    <div class="table-wrapper card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Formation</th>
+            <th>Niveau</th>
+            <th>Prix</th>
+            <th>Étudiants</th>
+            @if (isStaff()) {
+              <th>Statut</th>
+            }
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (formation of pagedFormations(); track formation.id) {
+            <tr>
+              <td>
+                <a class="formations__link" [routerLink]="ROUTES.formationsDetail(formation.id)">
+                  {{ formation.title }}
+                </a>
+                <span class="formations__instructor">
+                  {{ formation.instructor.firstName }} {{ formation.instructor.lastName }}
+                </span>
+              </td>
+              <td>{{ levelLabel(formation.level) }}</td>
+              <td>{{ formatPrice(formation.price) }}</td>
+              <td>{{ formation.studentsCount }}</td>
+              @if (isStaff()) {
+                <td>
+                  <app-badge [label]="statusLabel(formation.status)" [variant]="statusVariant(formation.status)" size="small" />
+                </td>
+              }
+              <td>
+                <div class="formations__list-actions">
+                  <a class="btn btn-secondary btn-sm" [routerLink]="ROUTES.formationsDetail(formation.id)">Détails</a>
+                  @if (isCreator(formation)) {
+                    <a class="btn btn-secondary btn-sm" [routerLink]="ROUTES.formationsEdit(formation.id)">Modifier</a>
+                    <app-button
+                      [label]="formation.status === 'published' ? 'Dépublier' : 'Publier'"
+                      size="small"
+                      variant="secondary"
+                      (click)="toggleStatus(formation)"
+                    />
+                    @if (canDelete(formation)) {
+                      <app-button label="Supprimer" size="small" variant="danger" (click)="requestDelete(formation)" />
+                    }
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (pageCount() > 1) {
+    <nav class="pagination" aria-label="Pagination">
+      <span class="pagination__info">
+        Affichage de {{ (page() - 1) * pageSize() + 1 }} à
+        {{ Math.min(page() * pageSize(), total()) }} sur {{ total() }} formation(s)
+      </span>
+      <button class="pagination__btn" [disabled]="page() === 1" (click)="goToPage(page() - 1)">Précédent</button>
+      @for (pageNumber of pageNumbers(); track pageNumber) {
+        <button
+          class="pagination__btn"
+          [class.is-active]="pageNumber === page()"
+          [attr.aria-current]="pageNumber === page() ? 'page' : null"
+          (click)="goToPage(pageNumber)"
+        >
+          {{ pageNumber }}
+        </button>
+      }
+      <button class="pagination__btn" [disabled]="page() === pageCount()" (click)="goToPage(page() + 1)">Suivant</button>
+    </nav>
+  }
+
+  @if (deleteTarget(); as target) {
+    <app-modal
+      title="Supprimer la formation"
+      [content]="'Voulez-vous vraiment supprimer « ' + target.title + ' » ? Cette action est irréversible.'"
+      [actions]="deleteActions()"
+      (close)="cancelDelete()"
+    />
+  }
+</div>

@@ -1,0 +1,19 @@
+@if (open()) {
+  <div class="sidebar__overlay" (click)="close.emit()"></div>
+}
+<nav class="sidebar" [class.sidebar--open]="open()" aria-label="Navigation principale">
+  <ul class="sidebar__list">
+    @for (item of navItems; track item.route) {
+      <li class="sidebar__item">
+        <a
+          class="sidebar__link"
+          [routerLink]="item.route"
+          routerLinkActive="sidebar__link--active"
+          (click)="close.emit()"
+        >
+          {{ item.label }}
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

@@ -1,0 +1,36 @@
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        @for (column of columns(); track column.key) {
+          <th [class.sortable]="column.sortable">
+            {{ column.header }}
+            @if (column.sortable) {
+              <span class="sort-indicator" aria-hidden="true">↕</span>
+            }
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of data(); track $index) {
+        <tr class="is-clickable" (click)="onRowClick(row)">
+          @for (column of columns(); track column.key) {
+            <td>{{ row[column.key] }}</td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+@if (pageable()) {
+  <div class="pagination">
+    <span class="pagination__info">Page {{ page() }} sur {{ getPageCount() }}</span>
+    <button type="button" class="pagination__btn" [disabled]="page() <= 1" aria-label="Page précédente" (click)="onPreviousPage()">
+      ‹
+    </button>
+    <button type="button" class="pagination__btn" [disabled]="page() >= getPageCount()" aria-label="Page suivante" (click)="onNextPage()">
+      ›
+    </button>
+  </div>
+}

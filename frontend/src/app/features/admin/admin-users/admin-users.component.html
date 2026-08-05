@@ -1,0 +1,201 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Utilisateurs</h1>
+    <p class="page-header__subtitle">Gérez les comptes de la plateforme</p>
+  </div>
+</div>
+
+@if (errorMessage()) {
+  <div class="admin-users__error" role="alert">
+    <p>{{ errorMessage() }}</p>
+  </div>
+}
+
+@if (notice()) {
+  <div class="admin-users__notice" role="status">
+    <p>{{ notice() }}</p>
+  </div>
+}
+
+<div class="card admin-users__toolbar">
+  <app-input
+    label="Rechercher"
+    placeholder="Nom ou email…"
+    [value]="search()"
+    (valueChange)="onSearchChange($event)"
+  />
+  <app-select
+    label="Rôle"
+    [options]="roleOptions"
+    [selected]="roleFilter()"
+    (selectionChange)="onRoleFilterChange($event)"
+  />
+  <app-select
+    label="Statut"
+    [options]="statusOptions"
+    [selected]="statusFilter()"
+    (selectionChange)="onStatusFilterChange($event)"
+  />
+</div>
+
+@if (loading()) {
+  <div class="card empty-state">
+    <p>Chargement des utilisateurs…</p>
+  </div>
+} @else {
+  <div class="card">
+    <div class="admin-users__bulk">
+      <div class="admin-users__bulk-actions">
+        <app-select
+          label="Changer le rôle en masse"
+          [options]="bulkRoleOptions"
+          [selected]="bulkRole()"
+          (selectionChange)="onBulkRoleChange($event)"
+        />
+        <app-button label="Appliquer" variant="secondary" (click)="applyBulkRole()" />
+        <app-button label="Bannir" variant="secondary" (click)="banSelected()" />
+      </div>
+      <app-button label="Exporter CSV" variant="tertiary" (click)="exportCsv()" />
+    </div>
+
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>
+              <input
+                type="checkbox"
+                [checked]="allChecked()"
+                (change)="toggleAll($event)"
+                aria-label="Sélectionner tout"
+              />
+            </th>
+            <th>Utilisateur</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Statut</th>
+            <th>Inscrit le</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of filteredUsers(); track user.id) {
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(user.id)"
+                  (change)="toggleUser(user.id, $event)"
+                  [attr.aria-label]="'Sélectionner ' + user.firstName"
+                />
+              </td>
+              <td data-label="Utilisateur">
+                <a class="admin-users__link" [routerLink]="ROUTES.studentsDetail(user.id)">
+                  {{ user.firstName }} {{ user.lastName }}
+                </a>
+              </td>
+              <td data-label="Email">{{ user.email }}</td>
+              <td data-label="Rôle">
+                <select
+                  class="admin-users__role-select"
+                  [value]="user.role"
+                  (change)="changeRole(user, $event)"
+                  [attr.aria-label]="'Rôle de ' + user.firstName"
+                >
+                  @for (option of roleOptions; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </td>
+              <td data-label="Statut">
+                <span
+                  class="badge"
+                  [class.badge--success]="user.status === 'active'"
+                  [class.badge--neutral]="user.status === 'inactive'"
+                  [class.badge--error]="user.status === 'banned'"
+                >
+                  {{ user.status === 'active' ? 'Actif' : user.status === 'inactive' ? 'Inactif' : 'Banni' }}
+                </span>
+              </td>
+              <td data-label="Inscrit le">{{ formatDate(user.createdAt) }}</td>
+              <td data-label="Actions">
+                <div class="admin-users__actions">
+                  <button class="btn btn-secondary btn-sm" type="button" (click)="openActivity(user)">
+                    Activité
+                  </button>
+                  @if (user.status !== 'banned') {
+                    <button class="btn btn-secondary btn-sm" type="button" (click)="setStatus(user, 'banned')">
+                      Bannir
+                    </button>
+                  }
+                  @if (user.status === 'active') {
+                    <button class="btn btn-secondary btn-sm" type="button" (click)="setStatus(user, 'inactive')">
+                      Désactiver
+                    </button>
+                  }
+                  <button class="btn btn-danger btn-sm" type="button" (click)="deleteUser(user)">
+                    Supprimer
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7">
+                <div class="empty-state">
+                  <p class="empty-state__text">Aucun utilisateur ne correspond à ces critères.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+@if (activityUser()) {
+  <div class="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Activité de l'utilisateur">
+      <div class="modal__header">
+        <h2 class="modal__title">
+          Activité de {{ activityUser()?.firstName }} {{ activityUser()?.lastName }}
+        </h2>
+        <button class="modal__close" type="button" (click)="closeActivity()" aria-label="Fermer">×</button>
+      </div>
+      <div class="modal__body">
+        @if (activityLoading()) {
+          <p>Chargement…</p>
+        } @else if (activityStats()) {
+          <div class="grid">
+            <div class="kpi-card">
+              <span class="kpi-card__value">{{ activityStats()?.totalEnrollments }}</span>
+              <span class="kpi-card__label">Inscriptions</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-card__value">{{ activityStats()?.completedCourses }}</span>
+              <span class="kpi-card__label">Terminés</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-card__value">{{ activityStats()?.averageCompletion }}%</span>
+              <span class="kpi-card__label">Avancement moyen</span>
+            </div>
+          </div>
+          @if (activityStats()!.recentActivity.length > 0) {
+            <h3 class="admin-users__modal-subtitle">Activités récentes</h3>
+            <ul class="admin-users__activity">
+              @for (activity of activityStats()!.recentActivity; track activity.id) {
+                <li>
+                  <span class="badge badge--info">{{ activity.type }}</span>
+                  <span class="admin-users__activity-message">{{ activity.message }}</span>
+                </li>
+              }
+            </ul>
+          }
+        } @else {
+          <p>Aucune activité disponible.</p>
+        }
+      </div>
+    </div>
+  </div>
+}

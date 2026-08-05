@@ -1,0 +1,113 @@
+<div class="page-header">
+  <div>
+    <a class="enrollment-detail__back" [routerLink]="ROUTES.enrollments">&larr; Retour aux inscriptions</a>
+    <h1 class="page-header__title">Détail de l'inscription</h1>
+  </div>
+</div>
+
+@if (errorMessage()) {
+  <div class="enrollment-detail__error" role="alert">
+    <p>{{ errorMessage() }}</p>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card empty-state">
+    <p>Chargement du détail…</p>
+  </div>
+} @else if (enrollment(); as enrollment) {
+  <div class="enrollment-detail__actions">
+    @if (role() === 'STUDENT') {
+      <a class="btn btn-primary" [routerLink]="ROUTES.coursePlayer(enrollment.id)">Continuer le cours</a>
+    } @else {
+      <a class="btn btn-primary" [routerLink]="ROUTES.studentsDetail(enrollment.studentId)">Voir l'étudiant</a>
+    }
+  </div>
+
+  <div class="enrollment-detail__grid">
+    <aside class="card enrollment-detail__aside" aria-label="Informations sur l'inscription">
+      <h2 class="enrollment-detail__aside-title">{{ formationTitle() }}</h2>
+      <app-badge [variant]="statusVariant(enrollment.status)" [label]="statusLabel(enrollment.status)" />
+      <dl class="enrollment-detail__info">
+        @if (role() !== 'STUDENT') {
+          <dt>Étudiant</dt>
+          <dd>{{ studentLabel() }}</dd>
+        }
+        <dt>Catégorie</dt>
+        <dd>{{ enrollment.formation?.category ?? '—' }}</dd>
+        <dt>Niveau</dt>
+        <dd>{{ levelLabel(enrollment.formation?.level) }}</dd>
+        <dt>Instructeur</dt>
+        <dd>{{ instructorLabel() }}</dd>
+        <dt>Date d'inscription</dt>
+        <dd>{{ formatDate(enrollment.enrollmentDate) }}</dd>
+        <dt>Note</dt>
+        <dd>{{ formatGrade() }}</dd>
+      </dl>
+    </aside>
+
+    <div class="enrollment-detail__main">
+      <section aria-label="Performance">
+        <h2 class="enrollment-detail__section-title">Performance</h2>
+        <div class="enrollment-detail__kpis">
+          <div class="card kpi-card">
+            <span class="kpi-card__label">Progression</span>
+            <span class="kpi-card__value">{{ progress()?.completionPercent ?? 0 }}%</span>
+          </div>
+          <div class="card kpi-card">
+            <span class="kpi-card__label">Leçons terminées</span>
+            <span class="kpi-card__value">
+              {{ progress()?.completedLessonsCount ?? 0 }} / {{ progress()?.totalLessonsCount ?? 0 }}
+            </span>
+          </div>
+          <div class="card kpi-card">
+            <span class="kpi-card__label">Note</span>
+            <span class="kpi-card__value">{{ formatGrade() }}</span>
+          </div>
+        </div>
+        <div class="card enrollment-detail__progress">
+          <app-progress [percentage]="progress()?.completionPercent ?? 0" label="Progression du cours" />
+        </div>
+      </section>
+
+      <section aria-label="Progression des leçons">
+        <h2 class="enrollment-detail__section-title">Progression des leçons</h2>
+        @if (progress()?.lessons?.length) {
+          <div class="table-wrapper card">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Leçon</th>
+                  <th>Progression</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (lesson of progress()?.lessons; track lesson.lessonId) {
+                  <tr>
+                    <td>{{ lessonTitle(lesson) }}</td>
+                    <td>
+                      <app-progress [percentage]="lesson.percent" />
+                    </td>
+                    <td>
+                      <app-badge
+                        variant="neutral"
+                        size="small"
+                        [label]="lessonStatus(lesson)"
+                      />
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="card empty-state">
+            <h3 class="empty-state__title">Aucune leçon</h3>
+            <p class="empty-state__text">Aucune leçon n'est disponible pour cette formation.</p>
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+}

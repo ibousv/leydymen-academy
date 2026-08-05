@@ -1,0 +1,17 @@
+<div [class]="classes()">
+  @if (label(); as label) {
+    <div class="progress__label">
+      <span>{{ label }}</span>
+      <span>{{ clampedPercentage() }}%</span>
+    </div>
+  }
+  <div
+    class="progress__track"
+    role="progressbar"
+    [attr.aria-valuenow]="clampedPercentage()"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  >
+    <div class="progress__bar" [style.width.%]="clampedPercentage()"></div>
+  </div>
+</div>

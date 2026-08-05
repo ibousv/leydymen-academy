@@ -1,0 +1,134 @@
+// ============================================================
+// LEYDYMEN ACADEMY — Styles globaux (par-dessus Tailwind preflight)
+// ============================================================
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+// ---------- Base ----------
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: $font-family-base;
+  font-size: $font-size-body;
+  line-height: $line-height-body;
+  color: $color-gray-900;
+  background-color: $color-white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ---------- Headings (spec §2.2) ----------
+h1 {
+  @include h1;
+}
+h2 {
+  @include h2;
+}
+h3 {
+  @include h3;
+}
+h4 {
+  @include h4;
+}
+h5 {
+  @include h5;
+}
+h6 {
+  @include h6;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: $color-primary;
+  text-decoration: none;
+  @include focus-visible;
+
+  &:hover {
+    color: $color-primary-dark;
+    text-decoration: underline;
+  }
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+}
+
+// ---------- Accessibilité ----------
+:focus-visible {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ---------- Utilitaires ----------
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-muted {
+  color: $color-gray-500;
+}
+
+.text-error {
+  color: $color-error;
+}
+
+.text-success {
+  color: $color-success;
+}
+
+.text-center {
+  text-align: center;
+}
+
+// ---------- Scrollbar ----------
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $color-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $color-gray-300;
+  border-radius: 4px;
+
+  &:hover {
+    background: $color-gray-500;
+  }
+}

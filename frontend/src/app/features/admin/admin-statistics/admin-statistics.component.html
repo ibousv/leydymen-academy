@@ -1,0 +1,191 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Statistiques & rapports</h1>
+    <p class="page-header__subtitle">Analyses de la plateforme</p>
+  </div>
+</div>
+
+@if (errorMessage()) {
+  <div class="admin-statistics__error" role="alert">
+    <p>{{ errorMessage() }}</p>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card empty-state">
+    <p>Chargement des statistiques…</p>
+  </div>
+} @else if (dashboard() && revenue()) {
+  <h2 class="admin-statistics__section-title">Vue d'ensemble</h2>
+  <div class="grid">
+    <div class="card kpi-card">
+      <span class="kpi-card__value">{{ dashboard()?.totalUsers }}</span>
+      <span class="kpi-card__label">Utilisateurs</span>
+    </div>
+    <div class="card kpi-card">
+      <span class="kpi-card__value">{{ dashboard()?.totalFormations }}</span>
+      <span class="kpi-card__label">Formations</span>
+    </div>
+    <div class="card kpi-card">
+      <span class="kpi-card__value">{{ formatCurrency(revenue()?.totalRevenue ?? 0) }}</span>
+      <span class="kpi-card__label">Revenu total</span>
+    </div>
+    <div class="card kpi-card">
+      <span class="kpi-card__value">{{ revenue()?.paidEnrollments }}</span>
+      <span class="kpi-card__label">Inscriptions payées</span>
+    </div>
+  </div>
+
+  <h2 class="admin-statistics__section-title">Analytique utilisateurs</h2>
+  <div class="admin-statistics__grid">
+    <div class="card admin-statistics__panel">
+      <h3 class="admin-statistics__panel-title">Tendance des inscriptions</h3>
+      @if (dashboard()!.enrollmentsOverTime.length > 0) {
+        <div class="admin-statistics__chart">
+          @for (entry of dashboard()!.enrollmentsOverTime; track entry.month) {
+            <div class="admin-statistics__bar-col">
+              <div
+                class="admin-statistics__bar"
+                [style.height.%]="(entry.count / maxEnrollments()) * 100"
+                [attr.title]="entry.count + ' inscriptions'"
+              ></div>
+              <span class="admin-statistics__bar-label">{{ formatMonth(entry.month) }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="admin-statistics__empty">Aucune donnée disponible.</p>
+      }
+    </div>
+
+    <div class="card admin-statistics__panel">
+      <h3 class="admin-statistics__panel-title">Répartition par niveau</h3>
+      @if (dashboard()!.studentDistribution.length > 0) {
+        <ul class="admin-statistics__level-list">
+          @for (entry of dashboard()!.studentDistribution; track entry.level) {
+            <li class="admin-statistics__level-row">
+              <span class="admin-statistics__level-name">{{ levelLabel(entry.level) }}</span>
+              <div class="admin-statistics__level-track">
+                <div
+                  class="admin-statistics__level-bar"
+                  [style.width.%]="(entry.count / maxLevelCount()) * 100"
+                ></div>
+              </div>
+              <span class="admin-statistics__level-count">{{ entry.count }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="admin-statistics__empty">Aucune donnée disponible.</p>
+      }
+    </div>
+  </div>
+
+  <h2 class="admin-statistics__section-title">Analytique formations</h2>
+  <div class="card admin-statistics__panel">
+    @if (dashboard()!.topFormations.length > 0) {
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Formation</th>
+              <th>Inscriptions</th>
+              <th>Tendance</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of dashboard()!.topFormations; track entry.formationId) {
+              <tr>
+                <td>{{ entry.title }}</td>
+                <td>{{ entry.enrollments }}</td>
+                <td>
+                  <div class="admin-statistics__table-track">
+                    <div
+                      class="admin-statistics__table-bar"
+                      [style.width.%]="(entry.enrollments / maxEnrollments()) * 100"
+                    ></div>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="admin-statistics__empty">Aucune donnée disponible.</p>
+    }
+  </div>
+
+  <h2 class="admin-statistics__section-title">Analytique revenus</h2>
+  <div class="admin-statistics__grid">
+    <div class="card admin-statistics__panel">
+      <h3 class="admin-statistics__panel-title">Évolution du revenu</h3>
+      @if (revenue()!.revenueTrend.length > 0) {
+        <div class="admin-statistics__chart">
+          @for (entry of revenue()!.revenueTrend; track entry.month) {
+            <div class="admin-statistics__bar-col">
+              <div
+                class="admin-statistics__bar admin-statistics__bar--revenue"
+                [style.height.%]="(entry.revenue / maxTrendRevenue()) * 100"
+                [attr.title]="formatCurrency(entry.revenue)"
+              ></div>
+              <span class="admin-statistics__bar-label">{{ formatMonth(entry.month) }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="admin-statistics__empty">Aucune donnée disponible.</p>
+      }
+    </div>
+
+    <div class="card admin-statistics__panel">
+      <h3 class="admin-statistics__panel-title">Revenu par formation</h3>
+      @if (revenue()!.revenueByFormation.length > 0) {
+        <ul class="admin-statistics__revenue-list">
+          @for (entry of revenue()!.revenueByFormation; track entry.formationId) {
+            <li class="admin-statistics__revenue-row">
+              <span class="admin-statistics__revenue-title">{{ entry.title }}</span>
+              <div class="admin-statistics__revenue-track">
+                <div
+                  class="admin-statistics__revenue-bar"
+                  [style.width.%]="(entry.revenue / maxFormationRevenue()) * 100"
+                ></div>
+              </div>
+              <span class="admin-statistics__revenue-value">{{ formatCurrency(entry.revenue) }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="admin-statistics__empty">Aucune donnée disponible.</p>
+      }
+    </div>
+  </div>
+
+  @if (dashboard()!.recentUsers.length > 0) {
+    <h2 class="admin-statistics__section-title">Derniers utilisateurs inscrits</h2>
+    <div class="card admin-statistics__panel">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Inscrit le</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of dashboard()!.recentUsers; track user.id) {
+              <tr>
+                <td>{{ user.firstName }} {{ user.lastName }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ roleLabel(user.role) }}</td>
+                <td>{{ formatDate(user.createdAt) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+}
