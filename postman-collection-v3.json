@@ -1,0 +1,1403 @@
+{
+  "info": {
+    "name": "LEYDYMEN Academy - Complete API Test Suite v3",
+    "description": "Collection orchestrée complète: Register Admins → Login Admins → Register Instructors → Login Instructors → Register Students → Create Formations → Modules → Lessons → Enrollments → Progress",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "3.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
+  },
+  "item": [
+    {
+      "name": "PHASE 1 - Register Admins",
+      "description": "Créer 2 admins avec tests de vérification",
+      "item": [
+        {
+          "name": "1.1 Register Admin 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Admin 1 registered successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.username).to.equal('admin_master');",
+                  "  pm.expect(json.data.role).to.equal('ADMIN');",
+                  "  pm.expect(json.data.status).to.equal('ACTIVE');",
+                  "  pm.environment.set('admin1_id', json.data.userId);",
+                  "  console.log('✓ Admin 1 created with ID:', json.data.userId);",
+                  "});",
+                  "pm.test('Response has required fields', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data).to.have.property('userId');",
+                  "  pm.expect(json.data).to.have.property('username');",
+                  "  pm.expect(json.data).to.have.property('email');",
+                  "  pm.expect(json.data).to.have.property('role');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_master\",\n  \"email\": \"admin1@leydymen.com\",\n  \"password\": \"AdminPass123!\",\n  \"firstName\": \"Admin\",\n  \"lastName\": \"Master\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "1.2 Register Admin 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Admin 2 registered successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.username).to.equal('admin_support');",
+                  "  pm.expect(json.data.role).to.equal('ADMIN');",
+                  "  pm.environment.set('admin2_id', json.data.userId);",
+                  "  console.log('✓ Admin 2 created with ID:', json.data.userId);",
+                  "});",
+                  "pm.test('Response has required fields', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data).to.have.property('userId');",
+                  "  pm.expect(json.data).to.have.property('email');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_support\",\n  \"email\": \"admin2@leydymen.com\",\n  \"password\": \"AdminPass123!\",\n  \"firstName\": \"Admin\",\n  \"lastName\": \"Support\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "PHASE 2 - Register Instructors",
+      "description": "Créer 4 instructors avec tests de vérification",
+      "item": [
+        {
+          "name": "2.1 Register Instructor 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Instructor 1 registered successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.username).to.equal('instructor_john');",
+                  "  pm.expect(json.data.role).to.equal('INSTRUCTOR');",
+                  "  pm.expect(json.data.status).to.equal('ACTIVE');",
+                  "  pm.environment.set('instructor1_id', json.data.userId);",
+                  "  console.log('✓ Instructor 1 created with ID:', json.data.userId);",
+                  "});",
+                  "pm.test('Response has required fields', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data).to.have.property('userId');",
+                  "  pm.expect(json.data).to.have.property('email');",
+                  "  pm.expect(json.data).to.have.property('role');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"instructor_john\",\n  \"email\": \"john@leydymen.com\",\n  \"password\": \"InstrPass123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"INSTRUCTOR\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "2.2 Register Instructor 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Instructor 2 registered successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.role).to.equal('INSTRUCTOR');",
+                  "  pm.environment.set('instructor2_id', json.data.userId);",
+                  "  console.log('✓ Instructor 2 created with ID:', json.data.userId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"instructor_alice\",\n  \"email\": \"alice@leydymen.com\",\n  \"password\": \"InstrPass123!\",\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Smith\",\n  \"role\": \"INSTRUCTOR\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "2.3 Register Instructor 3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Instructor 3 registered successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.role).to.equal('INSTRUCTOR');",
+                  "  pm.environment.set('instructor3_id', json.data.userId);",
+                  "  console.log('✓ Instructor 3 created with ID:', json.data.userId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"instructor_bob\",\n  \"email\": \"bob@leydymen.com\",\n  \"password\": \"InstrPass123!\",\n  \"firstName\": \"Bob\",\n  \"lastName\": \"Johnson\",\n  \"role\": \"INSTRUCTOR\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "2.4 Register Instructor 4",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Instructor 4 registered successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.role).to.equal('INSTRUCTOR');",
+                  "  pm.environment.set('instructor4_id', json.data.userId);",
+                  "  console.log('✓ Instructor 4 created with ID:', json.data.userId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"instructor_diana\",\n  \"email\": \"diana@leydymen.com\",\n  \"password\": \"InstrPass123!\",\n  \"firstName\": \"Diana\",\n  \"lastName\": \"Brown\",\n  \"role\": \"INSTRUCTOR\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "PHASE 3 - Login Admins & Instructors",
+      "description": "Login pour récupérer les JWT tokens des admins et instructors - CRUCIAL pour la suite",
+      "item": [
+        {
+          "name": "3.1 Login Admin 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Admin 1 logged in successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.username).to.equal('admin_master');",
+                  "  pm.expect(json.data.role).to.equal('ADMIN');",
+                  "  pm.expect(json.data.token).to.be.a('string');",
+                  "  pm.environment.set('admin1_token', json.data.token);",
+                  "  console.log('✓ Admin 1 logged in - Token saved');",
+                  "});",
+                  "pm.test('Token is not empty', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.token.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_master\",\n  \"password\": \"AdminPass123!\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"]}
+          }
+        },
+        {
+          "name": "3.2 Login Admin 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Admin 2 logged in successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.role).to.equal('ADMIN');",
+                  "  pm.expect(json.data.token).to.be.a('string');",
+                  "  pm.environment.set('admin2_token', json.data.token);",
+                  "  console.log('✓ Admin 2 logged in - Token saved');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_support\",\n  \"password\": \"AdminPass123!\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"]}
+          }
+        },
+        {
+          "name": "3.3 Login Instructor 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Instructor 1 logged in successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.username).to.equal('instructor_john');",
+                  "  pm.expect(json.data.role).to.equal('INSTRUCTOR');",
+                  "  pm.expect(json.data.token).to.be.a('string');",
+                  "  pm.environment.set('instructor1_token', json.data.token);",
+                  "  console.log('✓ Instructor 1 logged in - Token saved');",
+                  "});",
+                  "pm.test('Token is valid and not empty', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.token.length).to.be.greaterThan(50);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"instructor_john\",\n  \"password\": \"InstrPass123!\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"]}
+          }
+        },
+        {
+          "name": "3.4 Login Instructor 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Instructor 2 logged in successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.role).to.equal('INSTRUCTOR');",
+                  "  pm.environment.set('instructor2_token', json.data.token);",
+                  "  console.log('✓ Instructor 2 logged in - Token saved');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"instructor_alice\",\n  \"password\": \"InstrPass123!\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"]}
+          }
+        },
+        {
+          "name": "3.5 Login Instructor 3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Instructor 3 logged in successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.role).to.equal('INSTRUCTOR');",
+                  "  pm.environment.set('instructor3_token', json.data.token);",
+                  "  console.log('✓ Instructor 3 logged in - Token saved');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"instructor_bob\",\n  \"password\": \"InstrPass123!\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"]}
+          }
+        },
+        {
+          "name": "3.6 Login Instructor 4",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Instructor 4 logged in successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.role).to.equal('INSTRUCTOR');",
+                  "  pm.environment.set('instructor4_token', json.data.token);",
+                  "  console.log('✓ Instructor 4 logged in - Token saved');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"instructor_diana\",\n  \"password\": \"InstrPass123!\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "PHASE 4 - Register & Login Students",
+      "description": "Créer 10 students et les login pour récupérer leurs tokens",
+      "item": [
+        {
+          "name": "4.1 Register Student 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Student 1 registered successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.role).to.equal('STUDENT');",
+                  "  pm.expect(json.data.status).to.equal('ACTIVE');",
+                  "  pm.environment.set('student1_id', json.data.userId);",
+                  "  console.log('✓ Student 1 created with ID:', json.data.userId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_emma\",\n  \"email\": \"emma@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"Emma\",\n  \"lastName\": \"Wilson\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.2 Register Students 2-10",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_olivia\",\n  \"email\": \"olivia@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"Olivia\",\n  \"lastName\": \"Taylor\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.3 Register Student 3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Status is 201 Created', () => { pm.expect(pm.response.code).to.equal(201); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_james\",\n  \"email\": \"james@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"James\",\n  \"lastName\": \"Anderson\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.4 Register Student 4",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Status is 201 Created', () => { pm.expect(pm.response.code).to.equal(201); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_sophia\",\n  \"email\": \"sophia@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"Sophia\",\n  \"lastName\": \"White\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.5 Register Student 5",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Status is 201 Created', () => { pm.expect(pm.response.code).to.equal(201); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_michael\",\n  \"email\": \"michael@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"Michael\",\n  \"lastName\": \"Martin\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.6 Register Student 6",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Status is 201 Created', () => { pm.expect(pm.response.code).to.equal(201); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_ava\",\n  \"email\": \"ava@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"Ava\",\n  \"lastName\": \"Garcia\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.7 Register Student 7",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Status is 201 Created', () => { pm.expect(pm.response.code).to.equal(201); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_lucas\",\n  \"email\": \"lucas@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"Lucas\",\n  \"lastName\": \"Miller\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.8 Register Student 8",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Status is 201 Created', () => { pm.expect(pm.response.code).to.equal(201); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_isabella\",\n  \"email\": \"isabella@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"Isabella\",\n  \"lastName\": \"Davis\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.9 Register Student 9",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Status is 201 Created', () => { pm.expect(pm.response.code).to.equal(201); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_mason\",\n  \"email\": \"mason@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"Mason\",\n  \"lastName\": \"Rodriguez\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.10 Register Student 10",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('All 10 students registered', () => {",
+                  "  console.log('✓ All 10 students successfully created');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_charlotte\",\n  \"email\": \"charlotte@leydymen.com\",\n  \"password\": \"StudentPass123!\",\n  \"firstName\": \"Charlotte\",\n  \"lastName\": \"Lewis\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "4.11 Login Student 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Student 1 logged in successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.role).to.equal('STUDENT');",
+                  "  pm.expect(json.data.token).to.be.a('string');",
+                  "  pm.environment.set('student1_token', json.data.token);",
+                  "  console.log('✓ Student 1 logged in - Token saved');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"student_emma\",\n  \"password\": \"StudentPass123!\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "PHASE 5 - Create Formations with Instructor Tokens",
+      "description": "Créer 3 formations en utilisant les tokens des instructors - LES TOKENS SONT MAINTENANT DISPONIBLES!",
+      "item": [
+        {
+          "name": "5.1 Create Formation 1 (Instructor 1)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const token = pm.environment.get('instructor1_token');",
+                  "if (!token) {",
+                  "  console.error('❌ Instructor 1 token not found! Run Phase 3 Login first');",
+                  "} else {",
+                  "  console.log('✓ Using Instructor 1 token for Formation creation');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Formation 1 created successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.title).to.equal('Spring Boot Bootcamp');",
+                  "  pm.expect(json.data.status).to.equal('DRAFT');",
+                  "  pm.expect(json.data).to.have.property('formationId');",
+                  "  pm.environment.set('formation1_id', json.data.formationId);",
+                  "  console.log('✓ Formation 1 created with ID:', json.data.formationId);",
+                  "});",
+                  "pm.test('Response has required fields', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data).to.have.property('title');",
+                  "  pm.expect(json.data).to.have.property('category');",
+                  "  pm.expect(json.data).to.have.property('level');",
+                  "  pm.expect(json.data).to.have.property('duration');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Spring Boot Bootcamp\",\n  \"description\": \"Learn Spring Boot from scratch\",\n  \"fullDescription\": \"A comprehensive course on Spring Boot framework covering basics to advanced topics\",\n  \"category\": \"Java\",\n  \"level\": \"INTERMEDIATE\",\n  \"duration\": 80,\n  \"maxStudents\": 50,\n  \"startDate\": \"2026-08-15\",\n  \"endDate\": \"2026-10-15\",\n  \"price\": 999.99\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/formations", "host": ["{{base_url}}"], "path": ["api", "formations"]}
+          }
+        },
+        {
+          "name": "5.2 Create Formation 2 (Instructor 2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Formation 2 created successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.title).to.equal('Python for Data Science');",
+                  "  pm.environment.set('formation2_id', json.data.formationId);",
+                  "  console.log('✓ Formation 2 created with ID:', json.data.formationId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor2_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Python for Data Science\",\n  \"description\": \"Master Python for data analysis and machine learning\",\n  \"fullDescription\": \"Complete guide to Python data science libraries: pandas, numpy, scikit-learn\",\n  \"category\": \"Python\",\n  \"level\": \"ADVANCED\",\n  \"duration\": 120,\n  \"maxStudents\": 40,\n  \"startDate\": \"2026-09-01\",\n  \"endDate\": \"2026-11-01\",\n  \"price\": 1299.99\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/formations", "host": ["{{base_url}}"], "path": ["api", "formations"]}
+          }
+        },
+        {
+          "name": "5.3 Create Formation 3 (Instructor 3)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Formation 3 created successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.title).to.equal('React.js Masterclass');",
+                  "  pm.environment.set('formation3_id', json.data.formationId);",
+                  "  console.log('✓ Formation 3 created with ID:', json.data.formationId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor3_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"React.js Masterclass\",\n  \"description\": \"Build modern web applications with React\",\n  \"fullDescription\": \"Learn React hooks, state management, and modern web development patterns\",\n  \"category\": \"Web\",\n  \"level\": \"INTERMEDIATE\",\n  \"duration\": 100,\n  \"maxStudents\": 60,\n  \"startDate\": \"2026-08-20\",\n  \"endDate\": \"2026-10-20\",\n  \"price\": 899.99\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/formations", "host": ["{{base_url}}"], "path": ["api", "formations"]}
+          }
+        },
+        {
+          "name": "5.4 Publish Formation 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Formation 1 published', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.status).to.equal('PUBLISHED');",
+                  "  console.log('✓ Formation 1 published successfully');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
+            },
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/formations/{{formation1_id}}/status?status=PUBLISHED", "host": ["{{base_url}}"], "path": ["api", "formations", "{{formation1_id}}", "status"], "query": [{"key": "status", "value": "PUBLISHED"}]}
+          }
+        },
+        {
+          "name": "5.5 Publish Formation 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Formation 2 published', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.status).to.equal('PUBLISHED');",
+                  "  console.log('✓ Formation 2 published successfully');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor2_token}}", "type": "string"}]
+            },
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/formations/{{formation2_id}}/status?status=PUBLISHED", "host": ["{{base_url}}"], "path": ["api", "formations", "{{formation2_id}}", "status"], "query": [{"key": "status", "value": "PUBLISHED"}]}
+          }
+        },
+        {
+          "name": "5.6 Publish Formation 3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('All 3 formations published', () => {",
+                  "  console.log('✓ Formation 3 published - All 3 formations now PUBLISHED');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor3_token}}", "type": "string"}]
+            },
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/formations/{{formation3_id}}/status?status=PUBLISHED", "host": ["{{base_url}}"], "path": ["api", "formations", "{{formation3_id}}", "status"], "query": [{"key": "status", "value": "PUBLISHED"}]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "PHASE 6 - Create Modules & Lessons",
+      "description": "Créer des modules et des leçons pour les formations",
+      "item": [
+        {
+          "name": "6.1 Create Module 1 for Formation 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Module 1 created successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.title).to.equal('Spring Boot Fundamentals');",
+                  "  pm.environment.set('module1_id', json.data.moduleId);",
+                  "  console.log('✓ Module 1 created with ID:', json.data.moduleId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formationId\": {{formation1_id}},\n  \"title\": \"Spring Boot Fundamentals\",\n  \"description\": \"Learn the basics of Spring Boot framework\",\n  \"order\": 1\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/modules", "host": ["{{base_url}}"], "path": ["api", "modules"]}
+          }
+        },
+        {
+          "name": "6.2 Create Module 2 for Formation 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Module 2 created successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.title).to.equal('Spring Data & Database');",
+                  "  console.log('✓ Module 2 created with ID:', json.data.moduleId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formationId\": {{formation1_id}},\n  \"title\": \"Spring Data & Database\",\n  \"description\": \"Database integration with Spring Data JPA\",\n  \"order\": 2\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/modules", "host": ["{{base_url}}"], "path": ["api", "modules"]}
+          }
+        },
+        {
+          "name": "6.3 Create Lesson 1 for Module 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Lesson 1 created successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.title).to.equal('Introduction to Spring Boot');",
+                  "  pm.environment.set('lesson1_id', json.data.lessonId);",
+                  "  console.log('✓ Lesson 1 created with ID:', json.data.lessonId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"moduleId\": {{module1_id}},\n  \"title\": \"Introduction to Spring Boot\",\n  \"content\": \"Learn what Spring Boot is and why it's useful\",\n  \"videoUrl\": \"https://example.com/videos/intro-spring-boot.mp4\",\n  \"duration\": 30,\n  \"order\": 1\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/lessons", "host": ["{{base_url}}"], "path": ["api", "lessons"]}
+          }
+        },
+        {
+          "name": "6.4 Create Lesson 2 for Module 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Lesson 2 created successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.title).to.equal('Setting Up Your First Project');",
+                  "  console.log('✓ Lesson 2 created with ID:', json.data.lessonId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"moduleId\": {{module1_id}},\n  \"title\": \"Setting Up Your First Project\",\n  \"content\": \"Create and configure your first Spring Boot application\",\n  \"videoUrl\": \"https://example.com/videos/setup-project.mp4\",\n  \"duration\": 45,\n  \"order\": 2\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/lessons", "host": ["{{base_url}}"], "path": ["api", "lessons"]}
+          }
+        },
+        {
+          "name": "6.5 Create Lesson 3 for Module 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Lesson 3 created successfully', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.title).to.equal('RESTful APIs with Spring Boot');",
+                  "  console.log('✓ Lesson 3 created with ID:', json.data.lessonId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"moduleId\": {{module1_id}},\n  \"title\": \"RESTful APIs with Spring Boot\",\n  \"content\": \"Build RESTful web services using Spring Boot\",\n  \"videoUrl\": \"https://example.com/videos/restful-apis.mp4\",\n  \"duration\": 60,\n  \"order\": 3\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/lessons", "host": ["{{base_url}}"], "path": ["api", "lessons"]}
+          }
+        },
+        {
+          "name": "6.6 Create Lesson 4 for Module 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Module & Lesson creation complete', () => {",
+                  "  console.log('✓ All modules and lessons created successfully');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"moduleId\": {{module1_id}},\n  \"title\": \"Error Handling & Validation\",\n  \"content\": \"Implement proper error handling and data validation\",\n  \"videoUrl\": \"https://example.com/videos/error-handling.mp4\",\n  \"duration\": 40,\n  \"order\": 4\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/lessons", "host": ["{{base_url}}"], "path": ["api", "lessons"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "PHASE 7 - Enrollments & Progress Tracking",
+      "description": "Étudiants s'inscrivent aux formations et suivent leur progression",
+      "item": [
+        {
+          "name": "7.1 Enroll Student 1 in Formation 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Student 1 enrolled in Formation 1', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(['PENDING', 'ACTIVE']).to.include(json.data.status);",
+                  "  const enrollmentId = json.data.enrollmentId || json.data.id;",
+                  "  pm.environment.set('enrollment1_id', enrollmentId);",
+                  "  console.log('✓ Student 1 enrolled with ID:', enrollmentId, '- Status:', json.data.status);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{student1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formationId\": {{formation1_id}}\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/enrollments", "host": ["{{base_url}}"], "path": ["api", "enrollments"]}
+          }
+        },
+        {
+          "name": "7.2 Enroll Student 1 in Formation 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "pm.test('Student 1 enrolled in Formation 2', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(['PENDING', 'ACTIVE']).to.include(json.data.status);",
+                  "  pm.environment.set('enrollment2_id', json.data.enrollmentId);",
+                  "  console.log('✓ Student 1 enrolled in Formation 2 with ID:', json.data.enrollmentId, '- Status:', json.data.status);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{student1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formationId\": {{formation2_id}}\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/enrollments", "host": ["{{base_url}}"], "path": ["api", "enrollments"]}
+          }
+        },
+        {
+          "name": "7.3 Update Lesson Progress - Lesson 1 Completed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK or 201 Created', () => {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Lesson progress updated', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.status).to.equal('COMPLETED');",
+                  "  pm.expect(json.data.percentageWatched).to.equal(100);",
+                  "  console.log('✓ Lesson 1 marked as completed');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{student1_token}}", "type": "string"}]
+            },
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lessonId\": {{lesson1_id}},\n  \"status\": \"COMPLETED\",\n  \"percentageWatched\": 100\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/progress", "host": ["{{base_url}}"], "path": ["api", "progress"]}
+          }
+        },
+        {
+          "name": "7.4 Get Student Enrollments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Student has enrollments', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.content).to.be.an('array');",
+                  "  pm.expect(json.data.totalElements).to.be.greaterThanOrEqual(2);",
+                  "  console.log('✓ Student 1 has', json.data.totalElements, 'enrollments');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{student1_token}}", "type": "string"}]
+            },
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/enrollments?page=0&size=10", "host": ["{{base_url}}"], "path": ["api", "enrollments"], "query": [{"key": "page", "value": "0"}, {"key": "size", "value": "10"}]}
+          }
+        },
+        {
+          "name": "7.5 Get Enrollment Progress",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Enrollment progress retrieved', () => {",
+                  "  const json = pm.response.json();",
+                  "  // Data can be an array (list of progress) or empty",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  if (json.data.length > 0) {",
+                  "    pm.expect(json.data[0]).to.have.property('status');",
+                  "    console.log('✓ Progress records retrieved:', json.data.length);",
+                  "  } else {",
+                  "    console.log('✓ No progress records yet for this enrollment');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{student1_token}}", "type": "string"}]
+            },
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/progress/enrollment/{{enrollment1_id}}", "host": ["{{base_url}}"], "path": ["api", "progress", "enrollment", "{{enrollment1_id}}"]}
+          }
+        },
+        {
+          "name": "7.6 Get Formation Enrollments (Instructor View)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Formation enrollments retrieved', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.content).to.be.an('array');",
+                  "  pm.expect(json.data).to.have.property('totalElements');",
+                  "  console.log('✓ Formation 1 has', json.data.totalElements, 'enrolled students');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{instructor1_token}}", "type": "string"}]
+            },
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/formations/{{formation1_id}}/enrollments?page=0&size=10", "host": ["{{base_url}}"], "path": ["api", "formations", "{{formation1_id}}", "enrollments"], "query": [{"key": "page", "value": "0"}, {"key": "size", "value": "10"}]}
+          }
+        },
+        {
+          "name": "7.7 Get Student Statistics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Student statistics retrieved', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data).to.have.property('studentId');",
+                  "  pm.expect(json.data.studentId).to.be.a('number');",
+                  "  pm.expect(json.data).to.have.property('totalEnrollments');",
+                  "  pm.expect(json.data).to.have.property('completedFormations');",
+                  "  pm.expect(json.data).to.have.property('studentName');",
+                  "  console.log('✓ Student Statistics - ID:', json.data.studentId, ', Name:', json.data.studentName, ', Enrollments:', json.data.totalEnrollments);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{student1_token}}", "type": "string"}]
+            },
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/statistics/students/{{student1_id}}", "host": ["{{base_url}}"], "path": ["api", "statistics", "students", "{{student1_id}}"]}
+          }
+        },
+        {
+          "name": "7.8 Get Dashboard Statistics (Admin View)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Dashboard statistics retrieved', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.totalUsers).to.be.greaterThan(0);",
+                  "  pm.expect(json.data.totalFormations).to.be.greaterThan(0);",
+                  "  pm.expect(json.data.totalEnrollments).to.be.greaterThan(0);",
+                  "  console.log('✓ Dashboard Statistics:');",
+                  "  console.log('  - Total Users:', json.data.totalUsers);",
+                  "  console.log('  - Total Formations:', json.data.totalFormations);",
+                  "  console.log('  - Total Enrollments:', json.data.totalEnrollments);",
+                  "  console.log('  - Total Revenue:', json.data.totalRevenue);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{"key": "token", "value": "{{admin1_token}}", "type": "string"}]
+            },
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/statistics/dashboard", "host": ["{{base_url}}"], "path": ["api", "statistics", "dashboard"]}
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8080", "type": "string"},
+    {"key": "jwt_token", "value": "", "type": "string"},
+    {"key": "admin1_token", "value": "", "type": "string"},
+    {"key": "admin1_id", "value": "", "type": "string"},
+    {"key": "admin2_token", "value": "", "type": "string"},
+    {"key": "admin2_id", "value": "", "type": "string"},
+    {"key": "instructor1_token", "value": "", "type": "string"},
+    {"key": "instructor1_id", "value": "", "type": "string"},
+    {"key": "instructor2_token", "value": "", "type": "string"},
+    {"key": "instructor2_id", "value": "", "type": "string"},
+    {"key": "instructor3_token", "value": "", "type": "string"},
+    {"key": "instructor3_id", "value": "", "type": "string"},
+    {"key": "instructor4_token", "value": "", "type": "string"},
+    {"key": "instructor4_id", "value": "", "type": "string"},
+    {"key": "student1_token", "value": "", "type": "string"},
+    {"key": "student1_id", "value": "", "type": "string"},
+    {"key": "formation1_id", "value": "", "type": "string"},
+    {"key": "formation2_id", "value": "", "type": "string"},
+    {"key": "formation3_id", "value": "", "type": "string"},
+    {"key": "module1_id", "value": "", "type": "string"},
+    {"key": "lesson1_id", "value": "", "type": "string"},
+    {"key": "enrollment1_id", "value": "", "type": "string"},
+    {"key": "enrollment2_id", "value": "", "type": "string"}
+  ]
+}
