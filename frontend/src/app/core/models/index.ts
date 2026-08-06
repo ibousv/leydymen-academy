@@ -6,3 +6,4 @@ export * from './progress.model';
 export * from './statistics.model';
 export * from './pagination.model';
 export * from './api-error.model';
+export * from './api-response.model';

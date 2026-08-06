@@ -85,7 +85,7 @@ export class ProfileViewComponent {
     }).subscribe({
       next: ({ user, enrollments }) => {
         this.user.set(user);
-        this.enrollments.set(enrollments);
+        this.enrollments.set(enrollments ?? []);
         this.loading.set(false);
       },
       error: (error: HttpErrorResponse) => this.handleError(error),
@@ -108,7 +108,36 @@ export class ProfileViewComponent {
 
   private handleError(error: HttpErrorResponse): void {
     this.loading.set(false);
+    console.error('ProfileViewComponent error:', error);
+    
+    // Distinguer les vraies erreurs des listes vides
+    if (!error.error) {
+      this.errorMessage.set('Erreur réseau. Veuillez réessayer.');
+      return;
+    }
+    
     const body = error.error as { message?: string } | null;
-    this.errorMessage.set(body?.message ?? 'Impossible de charger votre profil. Veuillez réessayer.');
+    const message = body?.message;
+    
+    // Messages spécifiques par code d'erreur
+    switch (error.status) {
+      case 0:
+        this.errorMessage.set('Impossible de se connecter au serveur.');
+        break;
+      case 401:
+        this.errorMessage.set('Votre session a expiré. Veuillez vous reconnecter.');
+        break;
+      case 403:
+        this.errorMessage.set('Vous n\'avez pas accès à ce profil.');
+        break;
+      case 404:
+        this.errorMessage.set('Le profil demandé n\'existe pas.');
+        break;
+      case 500:
+        this.errorMessage.set('Erreur serveur. Veuillez réessayer plus tard.');
+        break;
+      default:
+        this.errorMessage.set(message ?? 'Impossible de charger votre profil. Veuillez réessayer.');
+    }
   }
 }

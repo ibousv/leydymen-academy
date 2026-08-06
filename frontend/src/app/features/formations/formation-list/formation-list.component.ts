@@ -81,8 +81,9 @@ export class FormationListComponent {
   protected readonly total = computed(() => this.formations().length);
   protected readonly pageCount = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   protected readonly pagedFormations = computed(() => {
+    const formations = this.formations() ?? [];
     const start = (this.page() - 1) * this.pageSize();
-    return this.formations().slice(start, start + this.pageSize());
+    return formations.slice(start, start + this.pageSize());
   });
   protected readonly pageNumbers = computed(() =>
     Array.from({ length: this.pageCount() }, (_, index) => index + 1),

@@ -9,12 +9,16 @@ export interface User {
   username: string;
   role: UserRole;
   status: UserStatus;
+  createdAt: string;
+  updatedAt: string;
+  lastActive: string;
   avatar?: string;
   bio?: string;
   location?: string;
   website?: string;
-  createdAt: string;
-  lastActive: string;
+  lastLogin?: string;
+  phone?: string;
+  profileImage?: string | null;
 }
 
 export interface UserFilters {

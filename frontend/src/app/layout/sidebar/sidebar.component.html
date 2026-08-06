@@ -3,7 +3,7 @@
 }
 <nav class="sidebar" [class.sidebar--open]="open()" aria-label="Navigation principale">
   <ul class="sidebar__list">
-    @for (item of navItems; track item.route) {
+    @for (item of navItems(); track item.route) {
       <li class="sidebar__item">
         <a
           class="sidebar__link"

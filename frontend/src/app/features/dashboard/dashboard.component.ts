@@ -251,7 +251,7 @@ export class DashboardComponent {
 
   private loadStudentData(user: User): void {
     forkJoin({
-      enrollments: this.enrollmentService.getEnrollments({ studentId: user.id }),
+      enrollments: this.enrollmentService.getEnrollments(),  // Pas de paramètre, retourne mes enrollments
       stats: this.statisticsService.getUserStats(user.id),
       formations: this.formationService.getFormations({ status: 'published' }),
     }).subscribe({

@@ -112,7 +112,16 @@ export class RegisterComponent {
     this.fieldErrors.set({ email: '', username: '' });
     const { firstName, lastName, email, username, password, confirmPassword, termsAccepted } =
       this.registerForm.getRawValue();
-    this.authService.register({ firstName, lastName, email, username, password, confirmPassword, termsAccepted }).subscribe({
+    this.authService.register({ 
+      firstName, 
+      lastName, 
+      email, 
+      username, 
+      password, 
+      confirmPassword, 
+      termsAccepted,
+      role: 'STUDENT'  // Les étudiants s'inscrivent avec le rôle STUDENT
+    }).subscribe({
       next: () => {
         this.loading.set(false);
         this.router.navigate([ROUTES.login]);

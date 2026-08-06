@@ -13,6 +13,7 @@ export interface RegisterPayload {
   password: string;
   confirmPassword: string;
   termsAccepted: boolean;
+  role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
 }
 
 export interface ForgotPasswordPayload {

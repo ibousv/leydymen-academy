@@ -304,7 +304,7 @@ export class EnrollmentListComponent {
     this.errorMessage.set('');
     this.enrollmentService.getEnrollments().subscribe({
       next: (enrollments) => {
-        this.studentEnrollments.set(enrollments);
+        this.studentEnrollments.set(enrollments ?? []);
         this.loading.set(false);
       },
       error: (error: HttpErrorResponse) => this.handleError(error),
@@ -316,9 +316,9 @@ export class EnrollmentListComponent {
     this.errorMessage.set('');
     this.formationService.getFormations({ page: 1, pageSize: 100 }).subscribe({
       next: (formations) => {
-        this.formations.set(formations);
-        if (formations.length > 0) {
-          this.selectedFormationId.set(formations[0].id);
+        this.formations.set(formations ?? []);
+        if ((formations ?? []).length > 0) {
+          this.selectedFormationId.set(formations![0].id);
           this.loadStaffEnrollments();
         } else {
           this.loading.set(false);
@@ -340,7 +340,7 @@ export class EnrollmentListComponent {
       .getEnrollments({ formationId, status: this.staffStatus() || undefined })
       .subscribe({
         next: (enrollments) => {
-          this.staffEnrollments.set(enrollments);
+          this.staffEnrollments.set(enrollments ?? []);
           this.loading.set(false);
         },
         error: (error: HttpErrorResponse) => this.handleError(error),
@@ -349,8 +349,35 @@ export class EnrollmentListComponent {
 
   private handleError(error: HttpErrorResponse): void {
     this.loading.set(false);
+    console.error('EnrollmentListComponent error:', error);
+    
+    if (!error.error) {
+      this.errorMessage.set('Erreur réseau. Veuillez réessayer.');
+      return;
+    }
+    
     const body = error.error as { message?: string } | null;
-    this.errorMessage.set(body?.message ?? 'Impossible de charger les inscriptions. Veuillez réessayer.');
+    const message = body?.message;
+    
+    switch (error.status) {
+      case 0:
+        this.errorMessage.set('Impossible de se connecter au serveur.');
+        break;
+      case 401:
+        this.errorMessage.set('Votre session a expiré. Veuillez vous reconnecter.');
+        break;
+      case 403:
+        this.errorMessage.set('Vous n\'avez pas accès à ces inscriptions.');
+        break;
+      case 404:
+        this.errorMessage.set('Les inscriptions demandées n\'existent pas.');
+        break;
+      case 500:
+        this.errorMessage.set('Erreur serveur. Veuillez réessayer plus tard.');
+        break;
+      default:
+        this.errorMessage.set(message ?? 'Impossible de charger les inscriptions. Veuillez réessayer.');
+    }
   }
 
   private downloadCsv(rows: string[][], filename: string): void {
