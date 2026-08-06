@@ -58,6 +58,8 @@ export class AuthService {
           const data = response.data;
           const now = new Date().toISOString();
           // Construire la réponse LoginResponse à partir de ApiResponse
+          // Note: Le backend ne retourne que userId, username, email, token, refreshToken, role, expiresIn
+          // On crée un objet User minimal avec les données disponibles
           return {
             token: data.token,
             refreshToken: data.refreshToken,
@@ -66,9 +68,9 @@ export class AuthService {
               username: data.username,
               email: data.email,
               role: data.role,
-              firstName: data.username,
-              lastName: '',
-              status: normalizeUserStatus(data.role === 'ADMIN' ? 'active' : 'active'),
+              firstName: '', // Backend ne fournit pas, sera enrichi par getCurrentUser()
+              lastName: '',  // Backend ne fournit pas, sera enrichi par getCurrentUser()
+              status: 'active',
               createdAt: now,
               updatedAt: now,
               lastActive: now,
@@ -111,7 +113,7 @@ export class AuthService {
 
   refreshToken(): Observable<TokenResponse> {
     return this.http
-      .post<ApiResponse<TokenResponseData>>(`${this.apiUrl}/auth/refresh-token`, { 
+      .post<ApiResponse<TokenResponseData>>(`${this.apiUrl}/auth/refresh`, { 
         refreshToken: this.getRefreshToken() 
       })
       .pipe(

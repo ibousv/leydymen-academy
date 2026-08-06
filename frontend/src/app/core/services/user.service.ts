@@ -2,10 +2,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, map, switchMap } from 'rxjs';
 import { AppConfigService } from './app-config.service';
-import type { ChangePasswordPayload, Paginated, User, UserFilters, UserUpdatePayload } from '../models';
+import type { ApiResponse, ChangePasswordPayload, User, UserFilters, UserUpdatePayload, PaginatedResponse } from '../models';
 
 /**
  * UserService — API des utilisateurs (spec §6.4).
+ * Adapté pour unwrapper les réponses ApiResponse du backend
  */
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -30,31 +31,53 @@ export class UserService {
       params = params.set('pageSize', String(filters.pageSize));
     }
     return this.http
-      .get<Paginated<User>>(`${this.apiUrl}/users`, { params })
-      .pipe(map((result) => result.items));
+      .get<ApiResponse<PaginatedResponse<User>>>(`${this.apiUrl}/users`, { params })
+      .pipe(
+        map((response) => response.data.content || [])
+      );
   }
 
   getUser(id: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/users/${id}`);
+    return this.http.get<ApiResponse<User>>(`${this.apiUrl}/users/${id}`)
+      .pipe(
+        map((response) => response.data)
+      );
   }
 
   updateUser(id: number, data: UserUpdatePayload): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/users/${id}`, data);
+    return this.http.put<ApiResponse<User>>(`${this.apiUrl}/users/${id}`, data)
+      .pipe(
+        map((response) => response.data)
+      );
   }
 
   deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/users/${id}`);
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/users/${id}`)
+      .pipe(
+        map(() => undefined)
+      );
   }
 
+  /**
+   * changePassword - endpoint n'existe pas au backend
+   * Retourne une erreur explicite
+   */
   changePassword(data: ChangePasswordPayload): Observable<void> {
-    return this.http.post(`${this.apiUrl}/users/change-password`, data).pipe(map(() => undefined));
+    console.warn('changePassword: endpoint /users/change-password n\'existe pas au backend');
+    return new Observable((observer) => {
+      observer.error(new Error('Change password endpoint not available'));
+    });
   }
 
+  /**
+   * uploadProfileImage - endpoint n'existe pas au backend
+   * Retourne une erreur explicite
+   */
   uploadProfileImage(file: File): Observable<string> {
-    return from(this.fileToDataUrl(file)).pipe(
-      switchMap((imageUrl) => this.http.post<{ imageUrl: string }>(`${this.apiUrl}/users/profile-image`, { imageUrl })),
-      map((response) => response.imageUrl),
-    );
+    console.warn('uploadProfileImage: endpoint /users/profile-image n\'existe pas au backend');
+    return new Observable((observer) => {
+      observer.error(new Error('Profile image upload endpoint not available'));
+    });
   }
 
   private fileToDataUrl(file: File): Promise<string> {

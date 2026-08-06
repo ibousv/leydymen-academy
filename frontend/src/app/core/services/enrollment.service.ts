@@ -1,11 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { AppConfigService } from './app-config.service';
-import type { Enrollment, EnrollmentFilters, EnrollmentStatus, Progress } from '../models';
+import type { ApiResponse, Enrollment, EnrollmentFilters, EnrollmentStatus, Progress, PaginatedResponse } from '../models';
 
 /**
  * EnrollmentService — API des inscriptions (spec §6.3).
+ * Adapté pour unwrapper les réponses ApiResponse du backend
  */
 @Injectable({ providedIn: 'root' })
 export class EnrollmentService {
@@ -23,26 +24,51 @@ export class EnrollmentService {
     if (filters.formationId !== undefined) {
       params = params.set('formationId', String(filters.formationId));
     }
-    return this.http.get<Enrollment[]>(`${this.apiUrl}/enrollments`, { params });
+    return this.http.get<ApiResponse<PaginatedResponse<Enrollment>>>(
+      `${this.apiUrl}/enrollments`,
+      { params }
+    ).pipe(
+      map((response) => response.data.content || [])
+    );
   }
 
   getEnrollment(id: number): Observable<Enrollment> {
-    return this.http.get<Enrollment>(`${this.apiUrl}/enrollments/${id}`);
+    return this.http.get<ApiResponse<Enrollment>>(`${this.apiUrl}/enrollments/${id}`)
+      .pipe(
+        map((response) => response.data)
+      );
   }
 
   enrollFormation(formationId: number): Observable<Enrollment> {
-    return this.http.post<Enrollment>(`${this.apiUrl}/enrollments`, { formationId });
+    return this.http.post<ApiResponse<Enrollment>>(
+      `${this.apiUrl}/enrollments`,
+      { formationId }
+    ).pipe(
+      map((response) => response.data)
+    );
   }
 
   cancelEnrollment(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/enrollments/${id}`);
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/enrollments/${id}`)
+      .pipe(
+        map(() => undefined)
+      );
   }
 
   updateEnrollmentStatus(id: number, status: EnrollmentStatus): Observable<Enrollment> {
-    return this.http.patch<Enrollment>(`${this.apiUrl}/enrollments/${id}/status`, { status });
+    return this.http.put<ApiResponse<Enrollment>>(
+      `${this.apiUrl}/enrollments/${id}/status?status=${status}`,
+      {}
+    ).pipe(
+      map((response) => response.data)
+    );
   }
 
   getEnrollmentProgress(id: number): Observable<Progress> {
-    return this.http.get<Progress>(`${this.apiUrl}/enrollments/${id}/progress`);
+    return this.http.get<ApiResponse<Progress>>(
+      `${this.apiUrl}/enrollments/${id}/progress`
+    ).pipe(
+      map((response) => response.data)
+    );
   }
 }
