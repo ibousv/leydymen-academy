@@ -27,7 +27,7 @@ services:
   # Spring Boot Backend
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     container_name: leydymen-backend
     environment:
