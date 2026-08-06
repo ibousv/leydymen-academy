@@ -1,0 +1,162 @@
+<div class="page-header">
+  <div>
+    <a class="student-detail__back" [routerLink]="ROUTES.students">&larr; Retour aux étudiants</a>
+    <h1 class="page-header__title">Profil étudiant</h1>
+  </div>
+</div>
+
+@if (notice()) {
+  <div class="student-detail__notice" role="status">
+    <p>{{ notice() }}</p>
+  </div>
+}
+@if (errorMessage()) {
+  <div class="student-detail__error" role="alert">
+    <p>{{ errorMessage() }}</p>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card empty-state">
+    <p>Chargement du profil…</p>
+  </div>
+} @else if (student(); as student) {
+  <div class="student-detail__grid">
+    <aside class="card student-detail__profile" aria-label="Profil">
+      <span class="avatar avatar-lg student-detail__avatar">{{ avatarInitials(student) }}</span>
+      <h2 class="student-detail__name">{{ student.firstName }} {{ student.lastName }}</h2>
+      <p class="student-detail__email">{{ student.email }}</p>
+      <div class="student-detail__badges">
+        <app-badge variant="neutral" size="small" [label]="student.role" />
+        <app-badge [variant]="statusVariant(student.status)" size="small" [label]="statusLabel(student.status)" />
+      </div>
+      @if (student.bio) {
+        <p class="student-detail__bio">{{ student.bio }}</p>
+      }
+      <dl class="student-detail__info">
+        <dt>Nom d'utilisateur</dt>
+        <dd>{{ student.username }}</dd>
+        <dt>Date d'inscription</dt>
+        <dd>{{ formatDate(student.createdAt) }}</dd>
+        <dt>Dernière activité</dt>
+        <dd>{{ formatDate(student.lastActive) }}</dd>
+        @if (student.location) {
+          <dt>Localisation</dt>
+          <dd>{{ student.location }}</dd>
+        }
+        @if (student.website) {
+          <dt>Site web</dt>
+          <dd>{{ student.website }}</dd>
+        }
+      </dl>
+      <div class="student-detail__profile-actions">
+        <app-button label="Message" variant="secondary" size="small" (click)="messageStudent()" />
+        <app-button label="Relevé (CSV)" variant="secondary" size="small" (click)="downloadTranscript()" />
+        @if (student.status !== 'inactive') {
+          <app-button
+            label="Désactiver"
+            variant="tertiary"
+            size="small"
+            [loading]="deactivating()"
+            (click)="deactivate()"
+          />
+        }
+        <app-button
+          label="Supprimer"
+          variant="danger"
+          size="small"
+          [loading]="deleting()"
+          (click)="delete()"
+        />
+      </div>
+    </aside>
+
+    <div class="student-detail__main">
+      <section aria-label="Performance">
+        <h2 class="student-detail__section-title">Performance</h2>
+        <div class="grid">
+          <div class="card kpi-card">
+            <span class="kpi-card__label">Taux de complétion</span>
+            <span class="kpi-card__value">{{ stats()?.averageCompletion ?? 0 }}%</span>
+          </div>
+          <div class="card kpi-card">
+            <span class="kpi-card__label">Cours terminés</span>
+            <span class="kpi-card__value">{{ stats()?.completedCourses ?? 0 }}</span>
+          </div>
+          <div class="card kpi-card">
+            <span class="kpi-card__label">En cours</span>
+            <span class="kpi-card__value">{{ stats()?.inProgressCourses ?? 0 }}</span>
+          </div>
+          <div class="card kpi-card">
+            <span class="kpi-card__label">Abandonnés</span>
+            <span class="kpi-card__value">{{ stats()?.droppedCourses ?? 0 }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section aria-label="Inscriptions">
+        <h2 class="student-detail__section-title">Inscriptions</h2>
+        @if (enrollments().length === 0) {
+          <div class="card empty-state">
+            <h3 class="empty-state__title">Aucune inscription</h3>
+            <p class="empty-state__text">Cet étudiant n'est inscrit à aucune formation.</p>
+          </div>
+        } @else {
+          <div class="table-wrapper card">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Formation</th>
+                  <th>Statut</th>
+                  <th>Progression</th>
+                  <th>Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (enrollment of enrollments(); track enrollment.id) {
+                  <tr>
+                    <td>{{ formationTitle(enrollment) }}</td>
+                    <td>
+                      <app-badge
+                        [variant]="enrollmentVariant(enrollment.status)"
+                        [label]="enrollmentLabel(enrollment.status)"
+                      />
+                    </td>
+                    <td>
+                      <app-progress
+                        [percentage]="enrollment.completionPercent"
+                        label="Progression"
+                        [variant]="progressVariant(enrollment.status)"
+                      />
+                    </td>
+                    <td>{{ formatGrade(enrollment) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <section aria-label="Activité récente">
+        <h2 class="student-detail__section-title">Activité récente</h2>
+        @if (stats()?.recentActivity?.length) {
+          <div class="card student-detail__activity">
+            @for (activity of stats()?.recentActivity; track activity.id) {
+              <div class="student-detail__activity-item">
+                <span class="student-detail__activity-dot" aria-hidden="true"></span>
+                <p class="student-detail__activity-message">{{ activity.message }}</p>
+                <time class="student-detail__activity-date">{{ formatDate(activity.date) }}</time>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="card empty-state">
+            <h3 class="empty-state__title">Aucune activité</h3>
+            <p class="empty-state__text">Aucune activité récente pour cet étudiant.</p>
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+}

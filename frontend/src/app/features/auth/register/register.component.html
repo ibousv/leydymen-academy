@@ -1,0 +1,72 @@
+<div class="auth-page">
+  <form class="auth-card" [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+    <span class="auth-card__brand">{{ APP_NAME }}</span>
+    <h1 class="auth-card__title">Créer un compte</h1>
+    <p class="auth-card__subtitle">Rejoignez LEYDYMEN Academy</p>
+
+    <div class="auth-card__grid">
+      <app-input label="Prénom" placeholder="ex. Awa" formControlName="firstName" [error]="fieldError('firstName')" />
+      <app-input label="Nom" placeholder="ex. Diallo" formControlName="lastName" [error]="fieldError('lastName')" />
+    </div>
+    <app-input
+      label="Email"
+      type="email"
+      placeholder="ex. awa@example.com"
+      formControlName="email"
+      [error]="fieldError('email') || fieldErrors().email"
+    />
+    <app-input
+      label="Nom d'utilisateur"
+      placeholder="ex. awa.diallo"
+      formControlName="username"
+      [error]="fieldError('username') || fieldErrors().username"
+    />
+    <app-input
+      label="Mot de passe"
+      type="password"
+      placeholder="Votre mot de passe"
+      formControlName="password"
+      [error]="fieldError('password')"
+    />
+
+    <div class="auth-card__strength" [class.auth-card__strength--empty]="passwordStrength().level === 0">
+      <div class="auth-card__strength-bars" aria-hidden="true">
+        @for (bar of [1, 2, 3]; track bar) {
+          <span class="auth-card__strength-bar" [class.is-active]="passwordStrength().level >= bar"></span>
+        }
+      </div>
+      <span class="auth-card__strength-label">{{ passwordStrength().label }}</span>
+    </div>
+
+    <app-input
+      label="Confirmer le mot de passe"
+      type="password"
+      placeholder="Répétez votre mot de passe"
+      formControlName="confirmPassword"
+      [error]="fieldError('confirmPassword')"
+    />
+
+    <label class="auth-card__terms">
+      <input type="checkbox" formControlName="termsAccepted" />
+      <span>J'accepte les conditions générales d'utilisation</span>
+    </label>
+    @if (termsError()) {
+      <p class="auth-card__field-error" role="alert">{{ termsError() }}</p>
+    }
+
+    @if (errorMessage(); as message) {
+      <p class="auth-card__error" role="alert">{{ message }}</p>
+    }
+
+    <app-button
+      [label]="loading() ? 'Inscription…' : 'S\'inscrire'"
+      [loading]="loading()"
+      (click)="onSubmit()"
+    />
+
+    <p class="auth-card__footer">
+      Déjà un compte ?
+      <a class="auth-card__link" [routerLink]="ROUTES.login">Se connecter</a>
+    </p>
+  </form>
+</div>

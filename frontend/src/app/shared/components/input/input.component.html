@@ -1,0 +1,22 @@
+<div class="form-field">
+  <label class="form-field__label" [class.form-field__label--required]="required()" [for]="inputId">
+    {{ label() }}
+  </label>
+  <input
+    [id]="inputId"
+    class="input"
+    [class.input--error]="!!error()"
+    [type]="type()"
+    [value]="value()"
+    [placeholder]="placeholder()"
+    [disabled]="disabled()"
+    [attr.required]="required() ? '' : null"
+    [attr.aria-invalid]="error() ? 'true' : null"
+    [attr.aria-describedby]="error() ? inputId + '-error' : null"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+  />
+  @if (error(); as error) {
+    <span class="form-field__error" [id]="inputId + '-error'">{{ error }}</span>
+  }
+</div>

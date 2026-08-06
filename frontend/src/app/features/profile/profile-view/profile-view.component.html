@@ -1,0 +1,93 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Mon profil</h1>
+    <p class="page-header__subtitle">Vos informations personnelles</p>
+  </div>
+  @if (user()) {
+    <a class="btn btn-primary btn-sm" [routerLink]="ROUTES.profileEdit">Modifier le profil</a>
+  }
+</div>
+
+@if (errorMessage()) {
+  <div class="profile-view__error" role="alert">
+    <p>{{ errorMessage() }}</p>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card empty-state">
+    <p>Chargement de votre profil…</p>
+  </div>
+} @else if (user()) {
+  <div class="profile-view__layout">
+    <aside class="card profile-view__card">
+      <div class="profile-view__avatar">
+        @if (user()?.avatar) {
+          <img [src]="user()?.avatar" [alt]="user()?.firstName + ' ' + user()?.lastName" />
+        } @else {
+          <span>{{ initials() }}</span>
+        }
+      </div>
+      <h2 class="profile-view__name">{{ user()?.firstName }} {{ user()?.lastName }}</h2>
+      <p class="profile-view__username">@{{ user()?.username }}</p>
+      <div class="profile-view__badges">
+        <app-badge [label]="roleLabel()" variant="primary" />
+        <app-badge [label]="statusLabel()" [variant]="statusVariant()" />
+      </div>
+      @if (user()?.bio) {
+        <p class="profile-view__bio">{{ user()?.bio }}</p>
+      }
+      <ul class="profile-view__meta">
+        @if (user()?.location) {
+          <li>Localisation : {{ user()?.location }}</li>
+        }
+        @if (user()?.website) {
+          <li>
+            <a [href]="user()?.website" target="_blank" rel="noopener noreferrer">{{ user()?.website }}</a>
+          </li>
+        }
+        <li>Inscrit le {{ formatDate(user()!.createdAt) }}</li>
+        <li>Actif le {{ formatLastActive(user()!.lastActive) }}</li>
+      </ul>
+    </aside>
+
+    <div class="profile-view__main">
+      <div class="grid">
+        <div class="card kpi-card">
+          <span class="kpi-card__value">{{ enrolledCount() }}</span>
+          <span class="kpi-card__label">Cours inscrits</span>
+        </div>
+        <div class="card kpi-card">
+          <span class="kpi-card__value">{{ completedCount() }}</span>
+          <span class="kpi-card__label">Cours terminés</span>
+        </div>
+      </div>
+
+      <div class="card profile-view__info">
+        <h2 class="profile-view__section-title">Informations de contact</h2>
+        <dl class="profile-view__info-list">
+          <div class="profile-view__info-row">
+            <dt>Email</dt>
+            <dd>{{ user()?.email }}</dd>
+          </div>
+          <div class="profile-view__info-row">
+            <dt>Rôle</dt>
+            <dd>{{ roleLabel() }}</dd>
+          </div>
+          @if (user()?.location) {
+            <div class="profile-view__info-row">
+              <dt>Localisation</dt>
+              <dd>{{ user()?.location }}</dd>
+            </div>
+          }
+          @if (user()?.website) {
+            <div class="profile-view__info-row">
+              <dt>Site web</dt>
+              <dd>{{ user()?.website }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
+    </div>
+  </div>
+}

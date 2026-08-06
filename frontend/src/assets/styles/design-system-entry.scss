@@ -1,0 +1,10 @@
+// ============================================================
+// LEYDYMEN ACADEMY — Point d'entrée du design system
+// À câbler dans angular.json (styles) par l'orchestrateur.
+// NE PAS importer 'tailwindcss' ici (incompatible SCSS).
+// ============================================================
+
+@use 'variables';
+@use 'mixins';
+@use 'global';
+@use 'design-system';

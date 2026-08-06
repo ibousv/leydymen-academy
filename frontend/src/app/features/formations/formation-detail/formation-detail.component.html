@@ -1,0 +1,203 @@
+<div class="detail">
+  @if (errorMessage(); as error) {
+    <div class="detail__error" role="alert">
+      <p class="detail__error-text">{{ error }}</p>
+      <a class="btn btn-secondary" [routerLink]="ROUTES.formations">Retour aux formations</a>
+    </div>
+  } @else if (loading()) {
+    <div class="detail__loading" aria-label="Chargement de la formation">
+      <app-skeleton />
+      <app-skeleton />
+      <app-skeleton />
+    </div>
+  } @else if (formation(); as formation) {
+    @if (notice(); as message) {
+      <p class="detail__notice" role="status">{{ message }}</p>
+    }
+
+    <section class="card detail__header">
+      @if (formation.image; as image) {
+        <img class="detail__image" [src]="image" alt="" />
+      }
+      <div class="detail__header-body">
+        <div class="detail__header-badges">
+          <app-badge [label]="levelLabel(formation.level)" variant="neutral" size="small" />
+          <app-badge [label]="formation.category" variant="primary" size="small" />
+          @if (isStaff()) {
+            <app-badge [label]="statusLabel(formation.status)" [variant]="statusVariant(formation.status)" size="small" />
+          }
+        </div>
+        <h1 class="detail__title">{{ formation.title }}</h1>
+        <p class="detail__subtitle">
+          Par {{ formation.instructor.firstName }} {{ formation.instructor.lastName }}
+        </p>
+        <div class="detail__meta">
+          <span>★ {{ formation.rating.toFixed(1) }} ({{ formation.ratingCount }} avis)</span>
+          <span>{{ formation.studentsCount }} étudiant(s)</span>
+          <span>Début : {{ formatDate(formation.startDate) }}</span>
+        </div>
+
+        <div class="detail__actions">
+          @if (isStudent() && !isEnrolled()) {
+            <app-button
+              [label]="enrolling() ? 'Inscription…' : 'S’inscrire'"
+              [loading]="enrolling()"
+              (click)="enroll()"
+            />
+          }
+          @if (enrollment(); as enrollment) {
+            <a class="btn btn-primary" [routerLink]="ROUTES.coursePlayer(enrollment.id)">Continuer le cours</a>
+            <div class="detail__enroll-progress">
+              <app-progress [percentage]="enrollment.completionPercent" label="Progression" />
+            </div>
+          }
+          @if (isStaff()) {
+            <a class="btn btn-secondary" [routerLink]="ROUTES.formationsEdit(formation.id)">Modifier</a>
+          }
+        </div>
+
+        <div class="detail__share" aria-label="Partager la formation">
+          <span class="detail__share-label">Partager :</span>
+          <a class="detail__share-link" [href]="shareLinks().facebook" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a class="detail__share-link" [href]="shareLinks().twitter" target="_blank" rel="noopener noreferrer">X</a>
+          <a class="detail__share-link" [href]="shareLinks().linkedin" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a class="detail__share-link" [href]="shareLinks().whatsapp" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
+    <nav class="detail__tabs" aria-label="Sections de la formation">
+      @for (tab of tabs; track tab.id) {
+        <button
+          class="detail__tab"
+          [class.detail__tab--active]="activeTab() === tab.id"
+          (click)="setTab(tab.id)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </nav>
+
+    @switch (activeTab()) {
+      @case ('overview') {
+        <div class="detail__grid">
+          <section class="card detail__panel" aria-label="Description">
+            <h2 class="detail__panel-title">Description</h2>
+            <p class="detail__text">{{ formation.description }}</p>
+
+            @if (formation.objectives.length) {
+              <h2 class="detail__panel-title">Objectifs</h2>
+              <ul class="detail__list">
+                @for (objective of formation.objectives; track objective) {
+                  <li>{{ objective }}</li>
+                }
+              </ul>
+            }
+
+            @if (formation.requirements.length) {
+              <h2 class="detail__panel-title">Prérequis</h2>
+              <ul class="detail__list">
+                @for (requirement of formation.requirements; track requirement) {
+                  <li>{{ requirement }}</li>
+                }
+              </ul>
+            }
+          </section>
+
+          <section class="card detail__panel" aria-label="Informations pratiques">
+            <h2 class="detail__panel-title">Informations pratiques</h2>
+            <dl class="detail__info">
+              <dt>Prix</dt>
+              <dd>{{ formatPrice(formation.price) }}</dd>
+              <dt>Niveau</dt>
+              <dd>{{ levelLabel(formation.level) }}</dd>
+              <dt>Catégorie</dt>
+              <dd>{{ formation.category }}</dd>
+              <dt>Date de début</dt>
+              <dd>{{ formatDate(formation.startDate) }}</dd>
+              <dt>Date de fin</dt>
+              <dd>{{ formatDate(formation.endDate) }}</dd>
+              <dt>Places</dt>
+              <dd>{{ formation.studentsCount }} / {{ formation.maxStudents }}</dd>
+            </dl>
+          </section>
+        </div>
+      }
+
+      @case ('curriculum') {
+        <section class="card detail__panel" aria-label="Programme de la formation">
+          <h2 class="detail__panel-title">Programme</h2>
+          @if (formation.modules.length) {
+            <div class="detail__modules">
+              @for (module of formation.modules; track module.id) {
+                <div class="detail__module">
+                  <h3 class="detail__module-title">Module {{ module.order }} : {{ module.title }}</h3>
+                  @if (module.description) {
+                    <p class="detail__text">{{ module.description }}</p>
+                  }
+                  <ul class="detail__lessons">
+                    @for (lesson of module.lessons; track lesson.id) {
+                      <li class="detail__lesson">
+                        <span class="detail__lesson-title">{{ lesson.order }}. {{ lesson.title }}</span>
+                        <span class="detail__lesson-duration">{{ lesson.durationMinutes }} min</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="detail__empty">Aucun module disponible.</p>
+          }
+        </section>
+      }
+
+      @case ('reviews') {
+        <section class="card detail__panel" aria-label="Avis des étudiants">
+          <h2 class="detail__panel-title">Avis des étudiants</h2>
+          <div class="detail__rating">
+            <span class="detail__rating-value">{{ formation.rating.toFixed(1) }}</span>
+            <span class="detail__rating-count">/ 5 · {{ formation.ratingCount }} avis</span>
+          </div>
+          <p class="detail__empty">Aucun avis détaillé pour le moment.</p>
+        </section>
+      }
+
+      @case ('instructor') {
+        <div class="detail__grid">
+          <section class="card detail__panel" aria-label="Profil de l'instructeur">
+            <h2 class="detail__panel-title">Votre instructeur</h2>
+            <p class="detail__instructor-name">
+              {{ formation.instructor.firstName }} {{ formation.instructor.lastName }}
+            </p>
+            <p class="detail__text">{{ formation.instructor.email }}</p>
+          </section>
+
+          <section class="card detail__panel" aria-label="Autres cours de l'instructeur">
+            <h2 class="detail__panel-title">Autres cours de cet instructeur</h2>
+            @if (otherFormations().length) {
+              <div class="detail__other-grid">
+                @for (item of otherFormations(); track item.id) {
+                  <app-card
+                    [title]="item.title"
+                    [subtitle]="item.instructor.firstName + ' ' + item.instructor.lastName"
+                    [image]="item.image"
+                    [interactive]="true"
+                    (cardClick)="goToFormation(item.id)"
+                  >
+                    <div class="detail__other-body">
+                      <span class="detail__other-price">{{ formatPrice(item.price) }}</span>
+                      <span>★ {{ item.rating.toFixed(1) }} ({{ item.ratingCount }})</span>
+                    </div>
+                  </app-card>
+                }
+              </div>
+            } @else {
+              <p class="detail__empty">Aucun autre cours publié par cet instructeur.</p>
+            }
+          </section>
+        </div>
+      }
+    }
+  }
+</div>

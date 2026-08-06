@@ -1,0 +1,137 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Modifier mon profil</h1>
+    <p class="page-header__subtitle">Mettez à jour vos informations personnelles</p>
+  </div>
+  <a class="btn btn-secondary btn-sm" [routerLink]="ROUTES.profile">Retour au profil</a>
+</div>
+
+@if (errorMessage()) {
+  <div class="profile-edit__error" role="alert">
+    <p>{{ errorMessage() }}</p>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card empty-state">
+    <p>Chargement de votre profil…</p>
+  </div>
+} @else {
+  @if (profileNotice()) {
+    <div class="profile-edit__notice" role="status">
+      <p>{{ profileNotice() }}</p>
+    </div>
+  }
+
+  <form [formGroup]="profileForm" class="card profile-edit__card" novalidate>
+    <h2 class="profile-edit__section-title">Informations personnelles</h2>
+
+    <div class="profile-edit__avatar-row">
+      <div class="profile-edit__avatar">
+        @if (profileForm.controls.avatar.value) {
+          <img [src]="profileForm.controls.avatar.value" alt="Photo de profil" />
+        } @else {
+          <span>Photo</span>
+        }
+      </div>
+      <label class="btn btn-secondary btn-sm profile-edit__upload">
+        Changer la photo
+        <input
+          class="profile-edit__file"
+          type="file"
+          accept="image/*"
+          (change)="onAvatarChange($event)"
+        />
+      </label>
+    </div>
+
+    <div class="form-grid">
+      <app-input
+        label="Prénom"
+        placeholder="ex. Amadou"
+        formControlName="firstName"
+        [error]="firstNameError()"
+      />
+      <app-input
+        label="Nom"
+        placeholder="ex. Diallo"
+        formControlName="lastName"
+        [error]="lastNameError()"
+      />
+    </div>
+    <app-input
+      label="Email"
+      type="email"
+      placeholder="ex. vous@exemple.com"
+      formControlName="email"
+      [error]="emailError()"
+    />
+    <div class="form-field">
+      <label class="form-field__label" for="profile-bio">Bio</label>
+      <textarea
+        id="profile-bio"
+        class="input"
+        rows="4"
+        formControlName="bio"
+        placeholder="Présentez-vous en quelques mots…"
+      ></textarea>
+    </div>
+    <div class="form-grid">
+      <app-input
+        label="Localisation"
+        placeholder="ex. Dakar"
+        formControlName="location"
+      />
+      <app-input
+        label="Site web"
+        placeholder="ex. https://votresite.com"
+        formControlName="website"
+      />
+    </div>
+
+    <div class="profile-edit__actions">
+      <app-button
+        [label]="savingProfile() ? 'Enregistrement…' : 'Enregistrer les modifications'"
+        (click)="saveProfile()"
+      />
+    </div>
+  </form>
+
+  @if (passwordNotice()) {
+    <div class="profile-edit__notice" role="status">
+      <p>{{ passwordNotice() }}</p>
+    </div>
+  }
+
+  <form [formGroup]="passwordForm" class="card profile-edit__card" novalidate>
+    <h2 class="profile-edit__section-title">Changement de mot de passe</h2>
+    <app-input
+      label="Mot de passe actuel"
+      type="password"
+      placeholder="Votre mot de passe actuel"
+      formControlName="currentPassword"
+      [error]="currentPasswordError()"
+    />
+    <app-input
+      label="Nouveau mot de passe"
+      type="password"
+      placeholder="Nouveau mot de passe"
+      formControlName="newPassword"
+      [error]="newPasswordError()"
+    />
+    <app-input
+      label="Confirmer le nouveau mot de passe"
+      type="password"
+      placeholder="Confirmer le nouveau mot de passe"
+      formControlName="confirmPassword"
+      [error]="confirmPasswordError()"
+    />
+    <div class="profile-edit__actions">
+      <app-button
+        [label]="savingPassword() ? 'Enregistrement…' : 'Changer le mot de passe'"
+        variant="secondary"
+        (click)="savePassword()"
+      />
+    </div>
+  </form>
+}

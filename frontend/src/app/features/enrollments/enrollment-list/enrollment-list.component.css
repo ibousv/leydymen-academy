@@ -1,0 +1,126 @@
+.enrollments__notice {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-medium);
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  font-size: var(--font-size-small);
+}
+
+.enrollments__error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-medium);
+  background-color: var(--color-error-light);
+}
+
+.enrollments__error p {
+  margin: 0;
+  font-size: var(--font-size-small);
+  color: var(--color-error);
+}
+
+.enrollments__tabs {
+  display: flex;
+  gap: var(--space-xs);
+  border-bottom: 1px solid var(--color-gray-200);
+  margin-bottom: var(--space-lg);
+}
+
+.enrollments__tab {
+  padding: var(--space-sm) var(--space-lg);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--color-gray-500);
+  cursor: pointer;
+}
+
+.enrollments__tab--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.enrollments__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.enrollments__toolbar--staff {
+  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+}
+
+.enrollments__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.enrollments__card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.enrollments__card-date {
+  margin: 0;
+  font-size: var(--font-size-small);
+  color: var(--color-gray-500);
+}
+
+.enrollments__card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+
+.enrollments__actions {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.enrollments__selection {
+  margin-right: auto;
+  padding-bottom: var(--space-sm);
+  font-size: var(--font-size-small);
+  color: var(--color-gray-500);
+}
+
+.enrollments__checkbox {
+  width: 40px;
+}
+
+.enrollments__student {
+  color: var(--color-gray-900);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.enrollments__student:hover {
+  color: var(--color-primary);
+}
+
+.enrollments__row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+@media (max-width: 992px) {
+  .enrollments__toolbar--staff {
+    grid-template-columns: 1fr;
+  }
+}

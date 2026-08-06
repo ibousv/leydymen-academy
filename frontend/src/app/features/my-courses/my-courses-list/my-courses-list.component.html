@@ -1,0 +1,97 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Mes cours</h1>
+    <p class="page-header__subtitle">Suivez et reprenez vos formations</p>
+  </div>
+</div>
+
+@if (errorMessage()) {
+  <div class="my-courses__error" role="alert">
+    <p>{{ errorMessage() }}</p>
+  </div>
+}
+
+@if (loading()) {
+  <div class="card empty-state">
+    <p>Chargement de vos cours…</p>
+  </div>
+} @else {
+  <nav class="my-courses__tabs" aria-label="Statut des cours">
+    @for (tab of tabs; track tab.value) {
+      <button
+        class="my-courses__tab"
+        [class.my-courses__tab--active]="tab.value === activeTab()"
+        (click)="setTab(tab.value)"
+        type="button"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+
+  <div class="card my-courses__toolbar">
+    <app-input
+      label="Rechercher"
+      placeholder="Trouver un cours…"
+      [value]="search()"
+      (valueChange)="onSearchChange($event)"
+    />
+    <app-select
+      label="Trier par"
+      [options]="sortOptions"
+      [selected]="sort()"
+      (selectionChange)="onSortChange($event)"
+    />
+  </div>
+
+  @if (sortedEnrollments().length === 0) {
+    <div class="card empty-state">
+      <h2 class="empty-state__title">Aucun cours</h2>
+      <p class="empty-state__text">
+        @if (activeTab() === 'in_progress') {
+          Vous n'avez pas encore de cours en cours.
+        } @else {
+          Vous n'avez pas encore terminé de cours.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="my-courses__cards">
+      @for (enrollment of sortedEnrollments(); track enrollment.id) {
+        <app-card
+          [title]="formationTitle(enrollment)"
+          [subtitle]="formationSubtitle(enrollment.formation)"
+          [image]="enrollment.formation?.image"
+        >
+          <div class="my-courses__card-body">
+            <app-progress [percentage]="enrollment.completionPercent" label="Progression" />
+            <p class="my-courses__card-date">Inscrit le {{ formatDate(enrollment.enrollmentDate) }}</p>
+            <a class="btn btn-primary btn-sm" [routerLink]="ROUTES.coursePlayer(enrollment.id)">Continuer</a>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+
+  @if (recommendedFormations().length > 0) {
+    <section class="my-courses__recommended" aria-label="Formations recommandées">
+      <h2 class="my-courses__section-title">Formations recommandées</h2>
+      <div class="my-courses__cards">
+        @for (formation of recommendedFormations(); track formation.id) {
+          <app-card
+            [title]="formation.title"
+            [subtitle]="formationSubtitle(formation)"
+            [image]="formation.image"
+          >
+            <div class="my-courses__card-body">
+              <p class="my-courses__card-date">{{ formation.category }} · {{ levelLabel(formation.level) }}</p>
+              <a class="btn btn-secondary btn-sm" [routerLink]="ROUTES.formationsDetail(formation.id)">
+                Voir la formation
+              </a>
+            </div>
+          </app-card>
+        }
+      </div>
+    </section>
+  }
+}

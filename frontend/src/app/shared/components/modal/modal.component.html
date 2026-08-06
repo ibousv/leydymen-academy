@@ -1,0 +1,23 @@
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <div class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title()">
+    <header class="modal__header">
+      <h4 class="modal__title">{{ title() }}</h4>
+      @if (closeButton()) {
+        <button type="button" class="modal__close" aria-label="Fermer" (click)="onClose()">×</button>
+      }
+    </header>
+    <div class="modal__body">
+      @if (content(); as content) {
+        <p>{{ content }}</p>
+      }
+      <ng-content></ng-content>
+    </div>
+    @if (actions().length > 0) {
+      <footer class="modal__footer">
+        @for (action of actions(); track action.label) {
+          <app-button [label]="action.label" (click)="onAction(action)"></app-button>
+        }
+      </footer>
+    }
+  </div>
+</div>

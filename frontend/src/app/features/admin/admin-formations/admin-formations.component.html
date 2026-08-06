@@ -1,0 +1,149 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Formations</h1>
+    <p class="page-header__subtitle">Gérez le catalogue de formations</p>
+  </div>
+  <a class="btn btn-primary btn-sm" [routerLink]="ROUTES.formationsCreate">Créer une formation</a>
+</div>
+
+@if (errorMessage()) {
+  <div class="admin-formations__error" role="alert">
+    <p>{{ errorMessage() }}</p>
+  </div>
+}
+
+@if (notice()) {
+  <div class="admin-formations__notice" role="status">
+    <p>{{ notice() }}</p>
+  </div>
+}
+
+<div class="card admin-formations__toolbar">
+  <app-input
+    label="Rechercher"
+    placeholder="Titre de la formation…"
+    [value]="search()"
+    (valueChange)="onSearchChange($event)"
+  />
+  <app-select
+    label="Statut"
+    [options]="statusOptions"
+    [selected]="statusFilter()"
+    (selectionChange)="onStatusFilterChange($event)"
+  />
+  <app-select
+    label="Catégorie"
+    [options]="categoryOptions"
+    [selected]="categoryFilter()"
+    (selectionChange)="onCategoryFilterChange($event)"
+  />
+</div>
+
+@if (loading()) {
+  <div class="card empty-state">
+    <p>Chargement des formations…</p>
+  </div>
+} @else {
+  <div class="card">
+    <div class="admin-formations__bulk">
+      <div class="admin-formations__bulk-actions">
+        <app-select
+          label="Changer le statut en masse"
+          [options]="bulkStatusOptions"
+          [selected]="bulkStatus()"
+          (selectionChange)="onBulkStatusChange($event)"
+        />
+        <app-button label="Appliquer" variant="secondary" (click)="applyBulkStatus()" />
+        <app-button label="Supprimer" variant="danger" (click)="deleteSelected()" />
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>
+              <input
+                type="checkbox"
+                [checked]="allChecked()"
+                (change)="toggleAll($event)"
+                aria-label="Sélectionner tout"
+              />
+            </th>
+            <th>Titre</th>
+            <th>Catégorie</th>
+            <th>Prix</th>
+            <th>Étudiants</th>
+            <th>Note</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (formation of filteredFormations(); track formation.id) {
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(formation.id)"
+                  (change)="toggleFormation(formation.id, $event)"
+                  [attr.aria-label]="'Sélectionner ' + formation.title"
+                />
+              </td>
+              <td data-label="Titre">
+                <a class="admin-formations__link" [routerLink]="ROUTES.formationsDetail(formation.id)">
+                  {{ formation.title }}
+                </a>
+              </td>
+              <td data-label="Catégorie">{{ formation.category }}</td>
+              <td data-label="Prix">{{ formatCurrency(formation.price) }}</td>
+              <td data-label="Étudiants">{{ formation.studentsCount }}</td>
+              <td data-label="Note">{{ formation.rating }} / 5</td>
+              <td data-label="Statut">
+                <span
+                  class="badge"
+                  [class.badge--success]="formation.status === 'published'"
+                  [class.badge--neutral]="formation.status === 'draft'"
+                  [class.badge--warning]="formation.status === 'archived'"
+                >
+                  {{ statusLabel(formation.status) }}
+                </span>
+              </td>
+              <td data-label="Actions">
+                <div class="admin-formations__actions">
+                  <a class="btn btn-secondary btn-sm" [routerLink]="ROUTES.formationsDetail(formation.id)">
+                    Voir
+                  </a>
+                  <a class="btn btn-secondary btn-sm" [routerLink]="ROUTES.formationsEdit(formation.id)">
+                    Modifier
+                  </a>
+                  <select
+                    class="admin-formations__status-select"
+                    [value]="formation.status"
+                    (change)="setStatus(formation, $event)"
+                    [attr.aria-label]="'Statut de ' + formation.title"
+                  >
+                    @for (option of statusOptions; track option.value) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                  <button class="btn btn-danger btn-sm" type="button" (click)="deleteFormation(formation)">
+                    Supprimer
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8">
+                <div class="empty-state">
+                  <p class="empty-state__text">Aucune formation ne correspond à ces critères.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

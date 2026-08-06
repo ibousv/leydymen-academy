@@ -1,0 +1,28 @@
+<div
+  class="card"
+  [class.elevation-1]="elevation() === 1"
+  [class.elevation-2]="elevation() === 2"
+  [class.elevation-3]="elevation() === 3"
+  [class.elevation-4]="elevation() === 4"
+  [class.card--interactive]="interactive()"
+  [attr.role]="interactive() ? 'button' : null"
+  [attr.tabindex]="interactive() ? 0 : null"
+  (click)="onCardClick()"
+  (keydown.enter)="onCardClick()"
+  (keydown.space)="onCardClick()"
+>
+  @if (image(); as image) {
+    <img class="card__image" [src]="image" alt="" />
+  }
+  @if (title(); as title) {
+    <div class="card__header">
+      <h3 class="card__title">{{ title }}</h3>
+      @if (subtitle(); as subtitle) {
+        <p class="card__subtitle">{{ subtitle }}</p>
+      }
+    </div>
+  }
+  <div class="card__body">
+    <ng-content />
+  </div>
+</div>

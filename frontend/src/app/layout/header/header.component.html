@@ -1,0 +1,13 @@
+<header class="header">
+  <button
+    type="button"
+    class="header__menu"
+    aria-label="Ouvrir le menu de navigation"
+    (click)="toggleSidebar.emit()"
+  >
+    <span class="header__menu-icon" aria-hidden="true"></span>
+  </button>
+  <a class="header__brand" [routerLink]="ROUTES.dashboard">
+    <span class="header__brand-name">{{ APP_NAME }}</span>
+  </a>
+</header>

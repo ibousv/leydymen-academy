@@ -1,0 +1,955 @@
+// ============================================================
+// LEYDYMEN ACADEMY — Design System (spec_frontend.md §3)
+// Classes de composants — inspiré d'OpenedX
+// ============================================================
+
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'sass:color';
+
+// ============================================================
+// 3.1 Boutons
+// ============================================================
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+  padding: $space-sm $space-md;
+  border: 1px solid transparent;
+  border-radius: $radius-medium;
+  font-family: inherit;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-body;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.05s ease;
+  @include focus-visible;
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled,
+  &.is-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// Tailles
+.btn-sm {
+  padding: $space-xs $space-sm;
+  font-size: $font-size-small;
+  border-radius: $radius-small;
+}
+
+.btn-md {
+  padding: $space-sm $space-md;
+}
+
+.btn-lg {
+  padding: $space-md $space-lg;
+  font-size: $font-size-h5;
+}
+
+// Variantes
+.btn-primary {
+  background-color: $color-primary;
+  color: $color-white;
+
+  &:hover:not(:disabled) {
+    background-color: $color-primary-dark;
+  }
+}
+
+.btn-secondary {
+  background-color: $color-white;
+  border-color: $color-primary;
+  color: $color-primary;
+
+  &:hover:not(:disabled) {
+    background-color: $color-primary-light;
+    color: $color-white;
+    border-color: $color-primary-light;
+  }
+}
+
+.btn-tertiary {
+  background-color: transparent;
+  color: $color-primary;
+
+  &:hover:not(:disabled) {
+    background-color: $color-primary-light;
+    color: $color-white;
+  }
+}
+
+.btn-danger {
+  background-color: $color-error;
+  color: $color-white;
+
+  &:hover:not(:disabled) {
+    background-color: color.adjust($color-error, $lightness: -8%);
+  }
+}
+
+// État loading
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: $color-white;
+    border-radius: $radius-full;
+    animation: btn-spin 0.7s linear infinite;
+  }
+}
+
+.btn-secondary.btn-loading::after,
+.btn-tertiary.btn-loading::after {
+  border-color: rgba($color-primary, 0.3);
+  border-top-color: $color-primary;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ============================================================
+// 3.2 Cartes
+// ============================================================
+.card {
+  background-color: $color-white;
+  border: 1px solid $color-gray-300;
+  border-radius: $radius-large;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card--interactive {
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    box-shadow: $shadow-elevation-2;
+    transform: translateY(-2px);
+  }
+}
+
+.elevation-1 {
+  box-shadow: $shadow-elevation-1;
+}
+
+.elevation-2 {
+  box-shadow: $shadow-elevation-2;
+}
+
+.elevation-3 {
+  box-shadow: $shadow-elevation-3;
+}
+
+.elevation-4 {
+  box-shadow: $shadow-elevation-4;
+}
+
+.card__header {
+  padding: $space-md $space-lg;
+  border-bottom: 1px solid $color-gray-300;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-sm;
+  flex-wrap: wrap;
+}
+
+.card__title {
+  @include h5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 48px;
+}
+
+.card__subtitle {
+  font-size: $font-size-small;
+  color: $color-gray-500;
+  margin: 0;
+}
+
+.card__body {
+  padding: $space-lg;
+  flex: 1;
+}
+
+.card__image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.card__footer {
+  padding: $space-md $space-lg;
+  border-top: 1px solid $color-gray-300;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $space-sm;
+  flex-wrap: wrap;
+}
+
+// ============================================================
+// 3.3 / 3.4 Champs de formulaire, inputs, select
+// ============================================================
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+  width: 100%;
+}
+
+.form-field__label {
+  font-size: $font-size-body;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-700;
+}
+
+.form-field__label--required::after {
+  content: ' *';
+  color: $color-error;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: $space-sm $space-md;
+  font-family: inherit;
+  font-size: $font-size-body;
+  line-height: $line-height-body;
+  color: $color-gray-900;
+  background-color: $color-white;
+  border: 1px solid $color-gray-300;
+  border-radius: $radius-medium;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  @include focus-visible;
+
+  &::placeholder {
+    color: $color-gray-500;
+  }
+
+  &:hover:not(:disabled):not(:focus) {
+    border-color: $color-gray-500;
+  }
+
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.15);
+  }
+
+  &:disabled {
+    background-color: $color-gray-100;
+    color: $color-gray-500;
+    cursor: not-allowed;
+  }
+}
+
+.input--error,
+.select--error {
+  border-color: $color-error;
+
+  &:focus {
+    border-color: $color-error;
+    box-shadow: 0 0 0 3px rgba($color-error, 0.15);
+  }
+}
+
+.form-field__error {
+  font-size: $font-size-small;
+  color: $color-error;
+  min-height: 16px;
+}
+
+.form-field__hint {
+  font-size: $font-size-caption;
+  color: $color-gray-500;
+}
+
+// ============================================================
+// 3.5 Tableau
+// ============================================================
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-body;
+}
+
+.table th {
+  text-align: left;
+  padding: $space-sm $space-md;
+  background-color: $color-gray-100;
+  color: $color-gray-700;
+  font-weight: $font-weight-semibold;
+  border-bottom: 1px solid $color-gray-300;
+  white-space: nowrap;
+}
+
+.table th.sortable {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.table th .sort-indicator {
+  margin-left: $space-xs;
+  font-size: $font-size-caption;
+}
+
+.table td {
+  padding: $space-sm $space-md;
+  border-bottom: 1px solid $color-gray-300;
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: $color-gray-100;
+  }
+}
+
+.table tbody tr.is-clickable {
+  cursor: pointer;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $space-sm;
+  padding: $space-md;
+  flex-wrap: wrap;
+}
+
+.pagination__info {
+  font-size: $font-size-small;
+  color: $color-gray-500;
+  margin-right: auto;
+}
+
+.pagination__btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 $space-sm;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $color-gray-300;
+  border-radius: $radius-medium;
+  background-color: $color-white;
+  color: $color-gray-700;
+  font-size: $font-size-small;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+  @include focus-visible;
+
+  &:hover:not(:disabled) {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &.is-active {
+    background-color: $color-primary;
+    border-color: $color-primary;
+    color: $color-white;
+  }
+}
+
+// ============================================================
+// 3.6 Modale
+// ============================================================
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(18, 18, 18, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-md;
+}
+
+.modal {
+  background-color: $color-white;
+  border-radius: $radius-large;
+  box-shadow: $shadow-elevation-4;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-sm;
+  padding: $space-md $space-lg;
+  border-bottom: 1px solid $color-gray-300;
+}
+
+.modal__title {
+  @include h4;
+  margin: 0;
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  font-size: $font-size-h3;
+  line-height: 1;
+  color: $color-gray-500;
+  cursor: pointer;
+  padding: $space-xs;
+  border-radius: $radius-medium;
+  @include focus-visible;
+
+  &:hover {
+    color: $color-gray-900;
+  }
+}
+
+.modal__body {
+  padding: $space-lg;
+}
+
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: $space-sm;
+  padding: $space-md $space-lg;
+  border-top: 1px solid $color-gray-300;
+  flex-wrap: wrap;
+}
+
+// ============================================================
+// 3.7 Badge
+// ============================================================
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
+  border-radius: 999px;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge-sm {
+  padding: 2px $space-sm;
+  font-size: 11px;
+}
+
+.badge-md {
+  padding: $space-xs $space-md;
+  font-size: $font-size-small;
+}
+
+.badge-lg {
+  padding: $space-sm $space-md;
+  font-size: $font-size-body;
+}
+
+.badge-primary {
+  background-color: $color-primary-light;
+  color: $color-primary-dark;
+}
+
+.badge-success {
+  background-color: $color-success-light;
+  color: $color-success;
+}
+
+.badge-warning {
+  background-color: $color-warning-light;
+  color: $color-warning;
+}
+
+.badge-error {
+  background-color: $color-error-light;
+  color: $color-error;
+}
+
+.badge-neutral {
+  background-color: $color-gray-100;
+  color: $color-gray-700;
+}
+
+// ============================================================
+// 3.8 Barre de progression
+// ============================================================
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.progress__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $space-sm;
+  font-size: $font-size-small;
+  color: $color-gray-700;
+}
+
+.progress__track {
+  background-color: $color-gray-100;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress__bar {
+  height: 100%;
+  border-radius: 999px;
+  background-color: $color-primary;
+  transition: width 0.3s ease;
+}
+
+.progress--success .progress__bar {
+  background-color: $color-success;
+}
+
+.progress--warning .progress__bar {
+  background-color: $color-warning;
+}
+
+.progress--error .progress__bar {
+  background-color: $color-error;
+}
+
+.progress--large .progress__track {
+  height: 12px;
+}
+
+// ============================================================
+// 3.9 Skeleton / loading
+// ============================================================
+.skeleton {
+  background: linear-gradient(90deg, $color-gray-100 25%, color.adjust($color-gray-100, $lightness: -3%) 37%, $color-gray-100 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: $radius-medium;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+// ============================================================
+// 3.10 Toast / notification
+// ============================================================
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-sm;
+  padding: $space-md $space-lg;
+  border-radius: $radius-large;
+  box-shadow: $shadow-elevation-3;
+  font-size: $font-size-body;
+  color: $color-gray-900;
+  background-color: $color-white;
+  border-left: 4px solid $color-primary;
+}
+
+.toast__icon {
+  flex-shrink: 0;
+}
+
+.toast__message {
+  flex: 1;
+}
+
+.toast__action {
+  background: none;
+  border: none;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 0;
+  @include focus-visible;
+
+  &:hover {
+    color: $color-primary-dark;
+  }
+}
+
+.toast-success {
+  border-left-color: $color-success;
+}
+
+.toast-error {
+  border-left-color: $color-error;
+}
+
+.toast-warning {
+  border-left-color: $color-warning;
+}
+
+.toast-info {
+  border-left-color: $color-primary;
+}
+
+// ============================================================
+// En-têtes de page, états vides, KPIs, chips, avatars
+// ============================================================
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+  margin-bottom: $space-lg;
+  flex-wrap: wrap;
+}
+
+.page-header__title {
+  @include h2;
+  margin: 0;
+}
+
+.page-header__subtitle {
+  color: $color-gray-500;
+  margin: $space-xs 0 0;
+  font-size: $font-size-body;
+}
+
+.page-header__actions {
+  display: flex;
+  gap: $space-sm;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: $space-2xl;
+  gap: $space-sm;
+  color: $color-gray-500;
+}
+
+.empty-state__icon {
+  font-size: 48px;
+  line-height: 1;
+  color: $color-gray-300;
+}
+
+.empty-state__title {
+  @include h5;
+  color: $color-gray-700;
+  margin: 0;
+}
+
+.empty-state__text {
+  font-size: $font-size-body;
+  max-width: 320px;
+}
+
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+  padding: $space-lg;
+}
+
+.kpi-card__label {
+  font-size: $font-size-small;
+  color: $color-gray-500;
+  font-weight: $font-weight-semibold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-card__value {
+  @include h3;
+  margin: 0;
+}
+
+.kpi-card__icon {
+  margin-left: auto;
+  color: $color-primary;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
+  padding: $space-xs $space-md;
+  border: 1px solid $color-gray-300;
+  border-radius: 999px;
+  font-size: $font-size-small;
+  color: $color-gray-700;
+  background-color: $color-white;
+}
+
+.chip--active {
+  border-color: $color-primary;
+  color: $color-primary;
+  background-color: $color-primary-light;
+}
+
+.avatar {
+  border-radius: $radius-full;
+  object-fit: cover;
+  display: inline-block;
+  background-color: $color-gray-100;
+}
+
+.avatar-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.avatar-md {
+  width: 48px;
+  height: 48px;
+}
+
+.avatar-lg {
+  width: 72px;
+  height: 72px;
+}
+
+// ============================================================
+// Grille responsive utilitaire (spec §9)
+// ============================================================
+.grid {
+  display: grid;
+  gap: $space-lg;
+  grid-template-columns: 1fr;
+
+  @include min($breakpoint-tablet) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include min($breakpoint-desktop) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.grid--2 {
+  @include min($breakpoint-tablet) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.grid--4 {
+  @include min($breakpoint-tablet) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include min($breakpoint-desktop) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// ============================================================
+// 3.9 Mobile (spec §9) — tables empilées et cibles tactiles
+// ============================================================
+@include max($breakpoint-mobile) {
+  .btn,
+  .input,
+  .select,
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    min-height: 44px;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody {
+    border-top: 1px solid $color-gray-300;
+  }
+
+  .table tr {
+    padding: $space-sm 0;
+    border-bottom: 1px solid $color-gray-100;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: $space-sm;
+    padding: $space-xs 0;
+    border: none;
+    text-align: right;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: $color-gray-500;
+    text-align: left;
+  }
+
+  .table td:first-child {
+    font-weight: 600;
+    color: $color-gray-900;
+  }
+}
+
+// ============================================================
+// 3.10 Panneau d'édition inline & barre de confirmation
+// ============================================================
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  padding: $space-md;
+  border: 1px solid $color-gray-300;
+  border-radius: $radius-medium;
+  background: $color-gray-100;
+}
+
+.editor__title {
+  font-size: $font-size-body;
+  font-weight: $font-weight-semibold;
+}
+
+.editor__fields {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.editor__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-md;
+}
+
+.editor__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $space-sm;
+  flex-wrap: wrap;
+}
+
+.editor__video {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 16 / 9;
+  border-radius: $radius-medium;
+  border: 1px solid $color-gray-300;
+  background: $color-gray-900;
+}
+
+.editor__video-actions {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  flex-wrap: wrap;
+}
+
+.editor__video-actions .btn-link {
+  color: $color-error;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: $font-size-small;
+  cursor: pointer;
+}
+
+.confirm-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-sm;
+  flex-wrap: wrap;
+  padding: $space-sm $space-md;
+  margin-bottom: $space-xs;
+  border: 1px solid $color-error;
+  border-radius: $radius-medium;
+  background: $color-error-light;
+  color: $color-error;
+  font-size: $font-size-small;
+  font-weight: $font-weight-semibold;
+}
+
+.confirm-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+}
+
+@include max($breakpoint-mobile) {
+  .editor__grid {
+    grid-template-columns: 1fr;
+  }
+}
