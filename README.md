@@ -31,17 +31,22 @@ LEYDYMEN Academy est une plateforme complète de gestion d'apprentissage en lign
 - Docker Compose 2.20+
 - Git
 
-### Installation en 3 étapes
+### Installation en 5 étapes
 
 ```bash
-# 1. Cloner le repository
-git clone https://github.com/leydymen/academy.git
-cd leydymen-academy
+# 1. recuperer le code source
+cd leydymen-academy/backend
 
 # 2. Configurer les variables d'environnement
 cp .env.example .env
 
-# 3. Démarrer l'application
+# 3. Démarrer les services backend
+docker-compose up -d
+
+# 4. naviger sur le dossier frontend
+cd leydymen-academy/frontend
+
+# 5. Démarrer le frontend
 docker-compose up -d
 ```
 
@@ -78,7 +83,6 @@ La documentation technique détaillée est disponible dans [DOCUMENTATION_TECHNI
 | **[10. Déploiement](./DOCUMENTATION_TECHNIQUE.md#10-processus-de-déploiement)** | Docker, build, production |
 | **[11. Maintenance](./DOCUMENTATION_TECHNIQUE.md#11-maintenance-et-monitoring)** | Monitoring, logs, backup |
 | **[12. Frontend](./DOCUMENTATION_TECHNIQUE.md#12-architecture-et-configuration-frontend)** | Angular, services, composants |
-| **[13. Docker Compose](./DOCUMENTATION_TECHNIQUE.md#13-docker-compose---orchestration-complète)** | Orchestration services |
 
 ---
 

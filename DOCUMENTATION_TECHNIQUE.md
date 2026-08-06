@@ -20,7 +20,6 @@
 10. [Processus de déploiement](#processus-de-déploiement)
 11. [Maintenance et monitoring](#maintenance-et-monitoring)
 12. [Architecture et Configuration Frontend](#12-architecture-et-configuration-frontend)
-13. [Docker Compose - Orchestration complète](#13-docker-compose---orchestration-complète)
 
 ---
 
@@ -160,7 +159,7 @@ graph LR
 #### Étape 1 : Récuperer le code
 
 ```bash
-cd leydymen-academy
+cd leydymen-academy/backend
 ```
 
 #### Étape 2 : Configurer les variables d'environnement
@@ -1217,64 +1216,6 @@ ng build --configuration production
 # - AOT compilation
 # - Source maps disabled
 ```
-
----
-
-## 13. Docker Compose - Orchestration complète
-
-### 13.1 Services
-
-**docker-compose.yml** à la racine orchestre:
-
-1. **MySQL**: Base de données (port 3306)
-2. **Backend**: Spring Boot API (port 8080)
-3. **Frontend**: Angular + Nginx (port 80)
-4. **PhpMyAdmin**: Interface BD (port 8081)
-
-### 13.2 Démarrage
-
-```bash
-# Démarrer tous les services
-docker-compose up -d
-
-# Vérifier le statut
-docker-compose ps
-
-# Voir les logs
-docker-compose logs -f
-
-# Arrêter les services
-docker-compose down
-```
-
-### 13.3 Architecture Docker
-
-```
-┌─────────────────────────────────────────────┐
-│          Docker Network: leydymen           │
-├─────────────────────────────────────────────┤
-│                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
-│  │ Frontend │  │ Backend  │  │  MySQL   │ │
-│  │ Nginx    │→ │ Spring   │→ │ Database │ │
-│  │ :80      │  │ Boot     │  │ :3306    │ │
-│  │          │  │ :8080    │  │          │ │
-│  └──────────┘  └──────────┘  └──────────┘ │
-│       ↓                            ↑       │
-│       └────→ PhpMyAdmin ←──────────┘       │
-│              :8081                        │
-│                                             │
-└─────────────────────────────────────────────┘
-```
-
-### 13.4 Fichiers de configuration
-
-- `.env`: Variables d'environnement
-- `.env.example`: Template de configuration
-- `docker-compose.yml`: Orchestration des services
-- `backend/Dockerfile`: Build backend
-- `frontend/Dockerfile`: Build frontend
-
 ---
 ## Conclusion
 
