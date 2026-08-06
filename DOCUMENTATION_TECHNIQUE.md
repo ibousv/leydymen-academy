@@ -19,6 +19,8 @@
 9. [Gestion des erreurs](#gestion-des-erreurs)
 10. [Processus de déploiement](#processus-de-déploiement)
 11. [Maintenance et monitoring](#maintenance-et-monitoring)
+12. [Architecture et Configuration Frontend](#12-architecture-et-configuration-frontend)
+13. [Docker Compose - Orchestration complète](#13-docker-compose---orchestration-complète)
 
 ---
 
@@ -857,6 +859,423 @@ docker-compose up -d
 
 ---
 
+## 12. Architecture et Configuration Frontend
+
+### 12.1 Stack technique Frontend
+
+- **Framework**: Angular 17+ (Standalone Components)
+- **Langage**: TypeScript 5+
+- **Gestionnaire de paquets**: NPM
+- **Build**: Webpack + esbuild (intégré Angular)
+- **Serveur**: Nginx (production)
+- **Styling**: CSS + Tailwind (si utilisé)
+- **État**: Signals (Angular 17+) + RxJS Observables
+- **Requêtes HTTP**: HttpClient + Interceptors
+
+### 12.2 Architecture en couches
+
+```
+frontend/src/
+├── app/
+│   ├── core/                          
+│   │   ├── services/                  
+│   │   │   ├── auth.service.ts
+│   │   │   ├── formation.service.ts
+│   │   │   ├── enrollment.service.ts
+│   │   │   ├── progress.service.ts
+│   │   │   ├── statistics.service.ts
+│   │   │   ├── user.service.ts
+│   │   │   └── app-config.service.ts
+│   │   │
+│   │   ├── models/                    
+│   │   │   ├── api-response.model.ts
+│   │   │   ├── auth.model.ts
+│   │   │   ├── formation.model.ts
+│   │   │   ├── enrollment.model.ts
+│   │   │   ├── progress.model.ts
+│   │   │   ├── user.model.ts
+│   │   │   ├── pagination.model.ts
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── interceptors/               
+│   │   │   ├── auth.interceptor.ts
+│   │   │   └── error.interceptor.ts
+│   │   │
+│   │   ├── guards/                    
+│   │   │   ├── auth.guard.ts
+│   │   │   └── role.guard.ts
+│   │   │
+│   │   └── utils/                     
+│   │       └── status.utils.ts
+│   │
+│   ├── features/                       
+│   │   ├── auth/
+│   │   │   ├── login/
+│   │   │   ├── register/
+│   │   │   └── forgot-password/
+│   │   │
+│   │   ├── formations/
+│   │   │   ├── formation-list/
+│   │   │   ├── formation-detail/
+│   │   │   ├── formation-create/
+│   │   │   └── formation-edit/
+│   │   │
+│   │   ├── enrollments/
+│   │   │   ├── enrollment-list/
+│   │   │   └── enrollment-detail/
+│   │   │
+│   │   ├── my-courses/
+│   │   │   ├── course-list/
+│   │   │   └── course-player/
+│   │   │
+│   │   ├── dashboard/
+│   │   │   └── dashboard/
+│   │   │
+│   │   ├── profile/
+│   │   │   └── profile/
+│   │   │
+│   │   ├── admin/
+│   │   │   ├── users/
+│   │   │   └── statistics/
+│   │   │
+│   │   └── error/
+│   │       ├── not-found/
+│   │       └── access-denied/
+│   │
+│   ├── shared/                        
+│   │   ├── components/
+│   │   │   ├── button/
+│   │   │   ├── input/
+│   │   │   ├── modal/
+│   │   │   ├── badge/
+│   │   │   ├── card/
+│   │   │   ├── navbar/
+│   │   │   └── sidebar/
+│   │   │
+│   │   ├── constants/
+│   │   │   └── constants.ts
+│   │   │
+│   │   ├── pipes/
+│   │   │   └── custom.pipe.ts
+│   │   │
+│   │   └── directives/
+│   │       └── custom.directive.ts
+│   │
+│   ├── layout/
+│   │   ├── main-layout/
+│   │   └── auth-layout/
+│   │
+│   ├── app.config.ts                 # Configuration Angular
+│   ├── app.routes.ts                 # Routes de l'app
+│   └── app.ts                        # Composant root
+│
+├── environments/
+│   ├── environment.ts                # Développement
+│   └── environment.prod.ts           # Production
+│
+├── styles.css                        # Styles globaux
+└── main.ts                          # Point d'entrée
+```
+
+### 12.3 Patterns et Architecture
+
+#### 12.3.1 Services Angular
+
+**AuthService**: Gestion authentification, tokens, user context
+```typescript
+login(credentials): Observable<LoginResponse>
+register(data): Observable<User>
+logout(): void
+refreshToken(): Observable<TokenResponse>
+getCurrentUser(): Observable<User>
+isAuthenticated(): boolean
+```
+
+**FormationService**: Opérations CRUD formations
+```typescript
+getFormations(filters): Observable<Formation[]>
+getFormation(id): Observable<FormationDetail>
+createFormation(data): Observable<Formation>
+updateFormation(id, data): Observable<Formation>
+deleteFormation(id): Observable<void>
+getFormationModules(id): Observable<Module[]>
+```
+
+**EnrollmentService**: Gestion inscriptions
+```typescript
+getEnrollments(filters): Observable<Enrollment[]>
+enrollFormation(formationId): Observable<Enrollment>
+cancelEnrollment(id): Observable<void>
+updateEnrollmentStatus(id, status): Observable<Enrollment>
+getEnrollmentProgress(id): Observable<Progress>
+```
+
+**ProgressService**: Suivi progression
+```typescript
+trackLessonProgress(lessonId, percent): Observable<StudentProgressDTO>
+markLessonAsComplete(lessonId): Observable<StudentProgressDTO>
+getFormationProgress(formationId): Observable<Progress>
+getEnrollmentProgress(enrollmentId): Observable<StudentProgressDTO[]>
+```
+
+#### 12.3.2 HTTP Interceptors
+
+**AuthInterceptor**: Ajoute JWT token à chaque requête
+```typescript
+- Attach Authorization: Bearer {token}
+- Skip refresh endpoint
+```
+
+**ErrorInterceptor**: Gère erreurs HTTP + token refresh automatique
+```typescript
+- Intercepte 401 Unauthorized
+- Refresh token automatiquement
+- Queue les requêtes en attente
+- Redirige vers login si refresh échoue
+- Affiche messages d'erreur
+```
+
+#### 12.3.3 Route Guards
+
+**AuthGuard**: Protège routes authentifiées
+```typescript
+- Vérifie isAuthenticated()
+- Redirige vers login si non authentifié
+- Sauvegarde URL d'origine
+```
+
+**RoleGuard**: Protège routes par rôle
+```typescript
+- Vérifie hasRole(role)
+- Redirige vers dashboard si rôle insuffisant
+- Supporte rôles multiples
+```
+
+### 12.4 Conformité API - Intégration Frontend
+
+#### État de l'intégration: 80% ✅
+
+**Endpoints fonctionnels**: 31/39
+
+| Catégorie | Conformité | Statut |
+|-----------|-----------|--------|
+| Authentification | 75% | ✅ |
+| Formations | 100% | ✅ |
+| Inscriptions | 100% | ✅ |
+| Progression | 75% | ✅ |
+| Utilisateurs | 75% | ✅ |
+| Statistiques | 67% | ✅ |
+| Modules/Leçons | 100% | ✅ |
+
+
+**Endpoints manquants** (prevu pour la version 2):
+- `/auth/forgot-password`
+- `/users/change-password`
+- `/users/profile-image`
+- `/uploads/images`, `/uploads/videos`
+- `/statistics/revenue`
+
+### 12.5 Configuration du Frontend
+
+#### 12.5.1 Environnements
+
+**environment.ts** (Développement):
+```typescript
+apiUrl: 'http://localhost:8080',
+production: false,
+logging: true
+```
+
+**environment.prod.ts** (Production):
+```typescript
+apiUrl: 'https://api.leydymen.com',
+production: true,
+logging: false
+```
+
+#### 12.5.2 Configuration Angular
+
+**app.config.ts**:
+```typescript
+providers: [
+  provideHttpClient(
+    withInterceptors([authInterceptor, errorInterceptor])
+  ),
+  provideRouter(routes, withPreloading(...)),
+  // Autres providers
+]
+```
+
+### 12.6 Déploiement Frontend avec Docker
+
+#### 12.6.1 Build Multi-stage
+
+**Dockerfile**:
+```dockerfile
+# Stage 1: Build Angular
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Serve avec Nginx
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
+EXPOSE 80
+```
+
+#### 12.6.2 Configuration Nginx
+
+**nginx.conf**:
+```nginx
+server {
+  listen 80;
+  root /usr/share/nginx/html;
+  index index.html;
+  
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+  
+  location /api/ {
+    proxy_pass http://backend:8080;
+  }
+}
+```
+
+### 12.7 Démarrage Frontend
+
+#### Développement local
+
+```bash
+# Installer les dépendances
+cd frontend
+npm install
+
+# Démarrer dev server
+ng serve
+# Accessible sur http://localhost:4200
+
+# Build production
+ng build --configuration production
+# Résultat dans dist/frontend/
+```
+
+#### Production avec Docker Compose
+
+```bash
+# À la racine du projet
+docker-compose up -d
+
+# Frontend accessible sur http://localhost
+# Backend accessible sur http://localhost:8080
+# phpMyAdmin sur http://localhost:8081
+```
+
+### 12.8 Variables d'environnement Frontend
+
+Fichier `.env` à la racine:
+```bash
+# Frontend
+FRONTEND_PORT=80
+
+# Backend
+BACKEND_PORT=8080
+BACKEND_URL=http://localhost:8080
+
+# Base de données
+MYSQL_PORT=3306
+PHPMYADMIN_PORT=8081
+```
+
+### 12.9 Performance et Optimisation
+
+#### 12.9.1 Angular Optimizations
+
+- ✅ Standalone Components (réduction bundle)
+- ✅ OnPush Change Detection
+- ✅ Signals pour réactivité (Angular 17+)
+- ✅ Lazy Loading des routes
+- ✅ Tree-shaking automatique
+
+#### 12.9.2 HTTP Caching
+
+- ✅ HttpClient cache interceptor (optionnel)
+- ✅ Service Worker pour offline mode (optionnel)
+- ✅ LocalStorage pour tokens et données
+
+#### 12.9.3 Build Optimization
+
+```bash
+# Production bundle:
+ng build --configuration production
+# - Minification
+# - Tree-shaking
+# - AOT compilation
+# - Source maps disabled
+```
+
+---
+
+## 13. Docker Compose - Orchestration complète
+
+### 13.1 Services
+
+**docker-compose.yml** à la racine orchestre:
+
+1. **MySQL**: Base de données (port 3306)
+2. **Backend**: Spring Boot API (port 8080)
+3. **Frontend**: Angular + Nginx (port 80)
+4. **PhpMyAdmin**: Interface BD (port 8081)
+
+### 13.2 Démarrage
+
+```bash
+# Démarrer tous les services
+docker-compose up -d
+
+# Vérifier le statut
+docker-compose ps
+
+# Voir les logs
+docker-compose logs -f
+
+# Arrêter les services
+docker-compose down
+```
+
+### 13.3 Architecture Docker
+
+```
+┌─────────────────────────────────────────────┐
+│          Docker Network: leydymen           │
+├─────────────────────────────────────────────┤
+│                                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
+│  │ Frontend │  │ Backend  │  │  MySQL   │ │
+│  │ Nginx    │→ │ Spring   │→ │ Database │ │
+│  │ :80      │  │ Boot     │  │ :3306    │ │
+│  │          │  │ :8080    │  │          │ │
+│  └──────────┘  └──────────┘  └──────────┘ │
+│       ↓                            ↑       │
+│       └────→ PhpMyAdmin ←──────────┘       │
+│              :8081                        │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+### 13.4 Fichiers de configuration
+
+- `.env`: Variables d'environnement
+- `.env.example`: Template de configuration
+- `docker-compose.yml`: Orchestration des services
+- `backend/Dockerfile`: Build backend
+- `frontend/Dockerfile`: Build frontend
+
+---
 ## Conclusion
 
 Cette documentation fournit les bases pour comprendre et maintenir la plateforme LEYDYMEN Academy. Pour toute question ou clarification supplémentaire, consulter le code source annoté.
